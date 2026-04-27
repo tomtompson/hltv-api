@@ -7,7 +7,7 @@ class Players:
         AGE = "//div[@class='playerInfoRow playerAge']//span[@itemprop='text']/text()"
         NATIONALITY = "//div[@class='playerRealname']//img/@alt"
         RATING = "//div[@class='player-stat']//span[@class='statsVal']//p/text()"
-        CURRENT_TEAM = "//div[@class='playerInfoRow playerTeam']//span[@itemprop='text']//a/text()"
+        CURRENT_TEAM = "//div[@class= 'playerInfoRow playerTeam']//a/text()"
         CURRENT_TEAM_URL = "//div[@class= 'playerInfoRow playerTeam']//a/@href"
         IMAGE_URL = "//img[@class = 'bodyshot-img']/@src"
         SOCIAL_MEDIA = "//div[@class = 'socialMediaButtons']//a/@href"
@@ -213,3 +213,39 @@ class Ranking:
         PLAYER_NATIONALITY = ".//div[@class='nick']/img/@alt"
         HLTV_POINTS = ".//div[@class = 'bg-holder']//div[contains(@class , 'teamLine sectionTeamPlayers')]//span[@class = 'points']/text()[1]"
         PLACEMENT = ".//div[@class = 'bg-holder']//div[@class = 'ranking-header']//span[@class = 'position wide-position']/text()"
+
+
+
+class Matches:
+    class LiveMatches:
+        LIVE_MATCH_CONTAINER = "//div[contains(@class, 'match-wrapper') and @live='true']"
+       
+        TEAM = ".//div[contains(@class, 'match-teamname')]/text()"
+        TEAM_ID_FROM_CONTAINER = "./@team1 | ./@team2"
+        TEAM_CURRENT_MAP_SCORE = ".//span[contains(@class, 'current-map-score')]/text()"
+        TEAM_MAP_SCORE = ".//span[@class='map-score']/span/text()"
+        TOURNAMENT_NAME = ".//div[@class='match-event text-ellipsis']/div[@class='text-ellipsis']/text()"
+        TOURNAMENT_ID = "./@data-event-id"
+        MATCH_TYPE = ".//div[contains(@class, 'match-meta') and not(contains(text(), 'Live'))]/text()"
+        MATCH_URL = ".//a[contains(@class, 'match-info')]/@href"
+
+    class TodayMatches:
+        DAY_SECTION = "//div[contains(@class, 'matches-list-section') and @match-container]"
+        DAY_HEADLINE = ".//div[contains(@class, 'matches-list-headline')]/text()"
+        DAY_HEADLINE_ALT = ".//div[contains(@class, 'section-headline')]/text()"
+        MATCH_WRAPPER = ".//div[contains(@class, 'match-wrapper') and not(@live='true')]"
+        
+        MATCH_ID = "./@data-match-id"
+        TEAM_NAME = ".//div[contains(@class, 'match-teamname')]/text()"
+        TEAM_LOGO = ".//div[contains(@class, 'match-team-logo-container')]/img/@src"
+        TOURNAMENT_NAME = ".//div[@class='match-event']/text()"
+        TOURNAMENT_ID = ".//div[@class='match-event']/@data-event-id"
+        TOURNAMENT_LOGO = ".//div[contains(@class, 'match-event-logo-container')]/img/@src"
+        MATCH_TIME = ".//div[contains(@class, 'match-time')]/text()"
+        MATCH_TIMESTAMP_ATTR = ".//div[contains(@class, 'match-time')]/@data-unix"       
+        MATCH_TIMESTAMP = ".//div[contains(@class, 'match-time')]/@data-unix"
+        MATCH_TYPE = ".//div[contains(@class, 'match-meta') and not(contains(text(), 'Live'))]/text()"
+        MATCH_URL = ".//a[contains(@class, 'match-info')]/@href"
+        #wraper team xpath
+        TEAM1_ID = "./@team1"
+        TEAM2_ID = "./@team2"

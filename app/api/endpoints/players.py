@@ -23,9 +23,9 @@ router = APIRouter()
 @router.get("/search/{player_name}",  response_model = PlayerSearch, response_model_exclude_none=True)
 def search_players(player_name: str):
  
-     hltv = HLTVPlayerSearch(query= player_name)
-     found_players = hltv.search_players()
-     return found_players
+    hltv = HLTVPlayerSearch(query= player_name)
+    found_players = hltv.search_players()
+    return found_players
   
 
 @router.get("/{player_id}/profile", response_model=PlayerProfile,response_model_exclude = None)

@@ -1,232 +1,269 @@
 from dataclasses import dataclass, field
 from typing import Optional
 from xml.etree import ElementTree
+import time
+import random
+import logging
 
 import cloudscraper
 from bs4 import BeautifulSoup
 from fastapi import HTTPException
 from lxml import etree
 from requests import Response, TooManyRedirects
+import requests
 
 from app.utils.utils import trim 
-#from app.utils.xpath import pagination
+
+# setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 @dataclass
 class HLTVBase:
     """
-    Base class for making HTTP requests to HLTV and extracting data from the web pages.
-
-    Args:
-        URL (str): The URL for the web page to be fetched.
-    Attributes:
-        response (dict): A dictionary to store the response data.
+    base class for making http requests to hltv and extracting data from web pages.
     """
 
-    URL: str = field(init = False)
-    response: dict = field(default_factory= lambda: {}, init= False)
-    
-    def make_request(self,url: Optional[str] = None) -> Response:
+    URL: str = field(init=False)
+    response: dict = field(default_factory=lambda: {}, init=False)
+    use_proxy: bool = field(default=False, init=False)
+    max_retries: int = field(default=3, init=False)
+
+    # ==================== INIT METHODS ====================
+
+    def __post_init__(self):
+        """initialize scraper with advanced settings"""
+        self._init_scraper()
+        self._init_logging()
+
+    def _init_scraper(self):
+        """create cloudscraper with good settings"""
+        self.scraper = cloudscraper.create_scraper(
+            interpreter='nodejs',        # better for complex js
+            delay=15,                     # delay for cloudflare
+            browser={
+                "browser": "chrome",
+                "platform": "windows",
+                "desktop": True,
+                "mobile": False
+            },
+            captcha={
+                'provider': '2captcha',   # if you have a key
+                'api_key': None
+            }
+        )
+
+        # headers copied from real browser
+        self.scraper.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8,en-US;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+            "Cache-Control": "max-age=0",
+            "sec-ch-ua": '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"Windows"'
+        })
+
+        # proxy setup (optional)
+        self.proxies = []
+        self.current_proxy_index = 0
+
+    def _init_logging(self):
+        """setup logger for base class"""
+        self.logger = logger
+
+    # ==================== PROXY METHODS ====================
+
+    def add_proxy_list(self, proxy_list: list):
+        """add list of proxies to rotate"""
+        self.proxies = proxy_list
+        self.use_proxy = True
+
+    def _get_next_proxy(self) -> Optional[dict]:
+        """get next proxy from rotation list"""
+        if not self.proxies:
+            return None
+        
+        proxy = self.proxies[self.current_proxy_index]
+        self.current_proxy_index = (self.current_proxy_index + 1) % len(self.proxies)
+        
+        return {
+            'http': proxy,
+            'https': proxy
+        }
+
+    # ==================== HELPER METHODS ====================
+
+    def _random_delay(self, min_sec: float = 2.0, max_sec: float = 5.0):
+        """add random delay to look like a human"""
+        time.sleep(random.uniform(min_sec, max_sec))
+
+    # ==================== REQUEST METHODS ====================
+
+    def make_request(self, url: Optional[str] = None, retry_count: int = 0) -> Response:
         """
-        Make an HTTP GET request to the specified URL.
-
-        Args:
-            url (str, optional): The URL to make the request to. If not provided, the class's URL
-                attribute will be used.
-
-        Returns:
-            Response: An HTTP Response object containing the server's response to the request.
-
-        Raises:
-            HTTPException: If there are too many redirects, or if the server returns a client or
-                server error status code.
+        make http get request with retry logic.
+        
+        args:
+            url: url to request (uses self.url if none)
+            retry_count: current retry attempt number
+            
+        returns:
+            response object
+            
+        raises:
+            http exception on failure
         """
         url = self.URL if not url else url
-        scraper = cloudscraper.create_scraper()
+        
+        # add random delay first time only
+        if retry_count == 0:
+            self._random_delay(1.0, 3.0)
+        
         try:
-            response: Response= scraper.get(
-                url = url,
-                headers ={
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Connection": "keep-alive"
-                },   
+            # use proxy if enabled
+            if self.use_proxy and self.proxies:
+                proxy = self._get_next_proxy()
+                if proxy:
+                    self.scraper.proxies.update(proxy)
+                    logger.info(f"using proxy: {proxy['http']}")
+            
+            # do the request
+            response = self.scraper.get(
+                url, 
+                timeout=30,
+                allow_redirects=True
             )
+            
+            # log response
+            logger.info(f"request to {url} - status: {response.status_code}")
+            
+            # handle 403 with retry
+            if response.status_code == 403 and retry_count < self.max_retries:
+                logger.warning(f"got 403 for {url}. retrying... (attempt {retry_count + 1})")
+                
+                # exponential backoff
+                wait_time = (2 ** retry_count) + random.uniform(1, 3)
+                time.sleep(wait_time)
+                
+                # recreate scraper on last retry
+                if retry_count >= 2:
+                    self.__post_init__()
+                
+                return self.make_request(url, retry_count + 1)
+            
+            response.raise_for_status()
+            return response
+            
         except TooManyRedirects:
-            raise HTTPException(status_code = 404, detail= f"Not found for url: {url}")
+            raise HTTPException(status_code=404, detail=f"not found for url: {url}")
         except ConnectionError:
-            raise HTTPException(status_code= 500, detail= f"Connection error for url: {url}")
-        except Exception as e:
-            raise HTTPException(status_code = 500, detail=f"Error for url: {url}. {e}")
-        if 400 <= response.status_code < 500:
+            if retry_count < self.max_retries:
+                logger.warning(f"connection error. retrying...")
+                time.sleep(5)
+                return self.make_request(url, retry_count + 1)
+            raise HTTPException(status_code=500, detail=f"connection error for url: {url}")
+        except requests.exceptions.HTTPError as e:
+            if response.status_code == 403:
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"access forbidden for url: {url}. hltv is blocking the request."
+                )
             raise HTTPException(
                 status_code=response.status_code,
-                detail = f"Client Error. {response.reason} for url: {url}"
+                detail=f"http error: {str(e)} for url: {url}"
             )
-        return response
-    
-    def request_url_bsoup(self, url:Optional[str] = None) -> BeautifulSoup:
-        """
-        Fetch the web page content and parse it using BeautifulSoup.
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"error for url: {url}. {str(e)}")
 
-        Returns:
-            BeautifulSoup: A BeautifulSoup object representing the parsed web page content.
+    # ==================== PARSING METHODS ====================
 
-        Raises:
-            HTTPException: If there are too many redirects, or if the server returns a client or
-                server error status code.
-        """
-
+    def request_url_bsoup(self, url: Optional[str] = None) -> BeautifulSoup:
+        """get page and parse with beautifulsoup"""
         response: Response = self.make_request(url)
         return BeautifulSoup(markup=response.content, features="html.parser")
-    
+
     @staticmethod
     def convert_bsoup_to_page(bsoup: BeautifulSoup) -> ElementTree:
-        """
-        Convert a BeautifulSoup object to an ElementTree.
-
-        Args:
-            bsoup (BeautifulSoup): The BeautifulSoup object representing the parsed web page content.
-
-        Returns:
-            ElementTree: An ElementTree representing the parsed web page content for further processing.
-        """
-
+        """turn beautifulsoup object into elementtree for xpath"""
         return etree.HTML(str(bsoup))
-    
+
     def request_url_page(self, url: Optional[str] = None) -> ElementTree:
-        """
-        Fetch the web page content, parse it using BeautifulSoup, and convert it to an ElementTree.
-
-        Returns:
-            ElementTree: An ElementTree representing the parsed web page content for further
-                processing.
-
-        Raises:
-            HTTPException: If there are too many redirects, or if the server returns a client or
-                server error status code.
-        """
+        """get page and convert to elementtree (ready for xpath)"""
         bsoup: BeautifulSoup = self.request_url_bsoup(url)
         return self.convert_bsoup_to_page(bsoup=bsoup)
-    
-    def get_all_by_xpath(self,xpath: str, element = None) -> list[str]:
-        """
-    Extract all text elements from the web page using the specified XPath expression.
 
-    Args:
-        xpath (str): The XPath expression used to locate the desired elements on the web page.
-        element: Optional HTML element to scope the XPath search. Defaults to self.page.
-    Returns:
-        list[str]: A list of trimmed strings extracted from the elements found via the XPath expression.
+    # ==================== XPATH METHODS ====================
 
-    Raises:
-        ValueError: If there is an error during XPath evaluation or element extraction.
-        """
+    def get_all_by_xpath(self, xpath: str, element=None) -> list[str]:
+        """get all text elements matching xpath"""
         try:
             target = element if element is not None else self.page
             elements = target.xpath(xpath)
             return [trim(e) for e in elements if e]
-        except Exception as e :
-            raise ValueError(f"Error at xpath data extract'{xpath}': {e}") from e
-    
-    def get_text_by_xpath(
-            self,
-            xpath: str,
-            pos: int =0,
-            iloc: Optional[int] = None,
-            iloc_from: Optional[int] = None,
-            iloc_to: Optional[int] = None,
-            join_str: Optional[str] = None,
-            attribute: Optional[str] =None,
-            element = None
-    ) -> Optional[str]:
-        """
-    Extract text or attribute from elements using XPath.
+        except Exception as e:
+            raise ValueError(f"error at xpath data extract '{xpath}': {e}") from e
 
-    Args:
-        xpath (str): XPath expression to select elements.
-        pos (int): Default index to select if multiple elements match.
-        iloc (int): Specific index of the desired element (alternative to 'pos').
-        iloc_from (int): Start index for slicing (inclusive).
-        iloc_to (int): End index for slicing (exclusive).
-        join_str (str): If provided, joins multiple extracted values using this separator.
-        attribute (str): Attribute to extract (e.g., 'alt', 'title'). If None, extracts text content.
-
-    Returns:
-        Optional[str]: Extracted text or attribute value, or None if not found.
-        """
-        
-
-        if not hasattr(self,"page"):
+    def get_text_by_xpath(self, xpath: str, pos: int = 0, iloc: Optional[int] = None,
+                          iloc_from: Optional[int] = None, iloc_to: Optional[int] = None,
+                          join_str: Optional[str] = None, attribute: Optional[str] = None,
+                          element=None) -> Optional[str]:
+        """get text or attribute from elements using xpath"""
+        if not hasattr(self, "page"):
             self.page = self.request_url_page()
 
         base = element if element is not None else self.page
+        elements = base.xpath(xpath)
 
-        elements = base.xpath(xpath) 
-        
         if not elements:
             return None
 
         def extract(e):
-            if isinstance(e,etree._Element):
+            if isinstance(e, etree._Element):
                 if attribute:
-                    return trim(e.get(attribute,""))
+                    return trim(e.get(attribute, ""))
                 return trim(e.text) if e.text else None
             return trim(str(e)) if e else None
 
         elements = [extract(e) for e in elements if extract(e)]
 
-        if isinstance(iloc,int):
+        if isinstance(iloc, int):
             return elements[iloc] if iloc < len(elements) else None
-        
+
         if isinstance(iloc_from, int) and isinstance(iloc_to, int):
-            elements= elements[iloc_from:iloc_to]
+            elements = elements[iloc_from:iloc_to]
         elif isinstance(iloc_to, int):
             elements = elements[:iloc_to]
-        elif isinstance(iloc_from,int):
-            elements= elements[iloc_from:]
+        elif isinstance(iloc_from, int):
+            elements = elements[iloc_from:]
 
         if join_str:
             return join_str.join(elements)
-        
+
         try:
             return elements[pos]
         except IndexError:
             return None
 
-    def raise_exception_if_not_found(self, xpath: str):
-        """
-    Raise an HTTP 404 exception if no element is found for the given XPath expression.
-
-    Args:
-        xpath (str): The XPath expression used to search for content on the page.
-
-    Raises:
-        HTTPException: Raised with status code 404 if the XPath does not return any result,
-        indicating that the requested resource was not found or is invalid.
-        """
-
-        if not self.get_text_by_xpath(xpath):
-            raise HTTPException(status_code = 404, detail=f"Invalid request (url: {self.URL})")
-        
-    
-    def get_elements_by_xpath(self, xpath: str, element = None) -> list[etree._Element]:
-        """
-    Extract all matching elements from the page or a given element using the provided XPath expression.
-
-    Args:
-        xpath (str): The XPath expression to evaluate.
-        element (etree._Element, optional): The base element to search within. If None, uses the full page.
-
-    Returns:
-        list[etree._Element]: A list of lxml elements that match the XPath.
-
-    Raises:
-        ValueError: If the XPath evaluation fails.
-        """
-        
+    def get_elements_by_xpath(self, xpath: str, element=None) -> list[etree._Element]:
+        """get raw elements matching xpath"""
         base = element if element is not None else self.page
         try:
             return base.xpath(xpath)
         except Exception as e:
-            raise ValueError(f"Error at xpath elements extract '{xpath}': {e}") from e
+            raise ValueError(f"error at xpath elements extract '{xpath}': {e}") from e
+
+    # ==================== VALIDATION METHODS ====================
+
+    def raise_exception_if_not_found(self, xpath: str):
+        """raise 404 if xpath returns nothing"""
+        if not self.get_text_by_xpath(xpath):
+            raise HTTPException(status_code=404, detail=f"invalid request (url: {self.URL})")

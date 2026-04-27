@@ -11,28 +11,20 @@ from app.services.players.stats import HLTVPlayerStats
 from app.services.players.careerStats import HLTVPlayerCareerStats
 from app.services.events.profile import HLTVEventProfile
 from app.services.events.teamStats import HLTVEventTeamStats
+from app.services.teams.search import HLTVTeamSearch
+from app.services.teams.profile import HLTVTeamProfile
+from app.services.teams.achievements import HLTVTeamAchievements
+from app.services.ranking.stats import HLTVRankingStats
 
-if __name__ == "__main__":
-    # Exemplo com s1mple (ID 7998)
+from datetime import datetime, timezone
+import time
 
-    query = "pro league"
-    
-    team_id = "7020"  # ID do jogador
-    event_id = "8045"
-    profile = HLTVEventTeamStats(event_id=event_id, team_id= team_id)
-    data = profile.get_team_event_stats()
-    
-    #achievements = HLTVPlayerTeamAchievements(player_id=player_id)
+# Retorna o timestamp em UTC
+utc_timestamp = time.time()
+print(utc_timestamp)
+# Saída ex: 1743769015.000206
 
-    #achievements = HLTVPlayerCareerStats(player_id= player_id)
 
-    #data = achievements.get_player_career_stats()
-
-   
-
-    print(data)
-    #for i, row in enumerate(rows):
-       # print(f"\n=== Linha {i+1} ===")
-       # print(etree.tostring(row, pretty_print=True, encoding="unicode"))
-    #pprint(data)
-
+# Obtém a hora atual UTC com timezone configurado
+utc_agora = datetime.now(timezone.utc)
+print(utc_agora)
