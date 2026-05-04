@@ -1,5 +1,8 @@
+# app/services/ranking_stats.py
+
 from dataclasses import dataclass
 from typing import List, Dict, Optional
+
 from fastapi import HTTPException
 
 from app.services.base import HLTVBase
@@ -26,12 +29,10 @@ class HLTVRankingStats(HLTVBase):
         """setup ranking stats with placement range."""
         super().__post_init__()
         
-        url = "https://www.hltv.org/ranking/teams"
-        self.URL = url
+        self.URL = "https://www.hltv.org/ranking/teams"
         
         self.logger.info(f"loading ranking stats for placements {self.start_placement} to {self.end_placement}")
         
-        # validate range
         if self.start_placement < 1 or self.end_placement < self.start_placement:
             self.logger.error(f"invalid placement range: {self.start_placement} - {self.end_placement}")
             raise HTTPException(
@@ -39,12 +40,11 @@ class HLTVRankingStats(HLTVBase):
                 detail=f"invalid placement range: start must be >= 1 and end must be >= start"
             )
         
-        # load page
         self.page = self.request_url_page()
         
         self.logger.info("ranking page loaded successfully")
 
-    # ==================== HELPER METHODS ====================
+    # ==================== PRIVATE METHODS ====================
 
     def _make_absolute_url(self, url: Optional[str]) -> Optional[str]:
         """
@@ -58,7 +58,6 @@ class HLTVRankingStats(HLTVBase):
         """
         if not url:
             return None
-            
         if url.startswith('http'):
             return url
         elif url.startswith('/'):
@@ -76,7 +75,7 @@ class HLTVRankingStats(HLTVBase):
             team_element: lxml element for the team
             
         returns:
-            list of player dictionaries
+            list of player dictionaries with player_id, nickname, nationality, picture_url
         """
         lineup = []
         
@@ -90,7 +89,6 @@ class HLTVRankingStats(HLTVBase):
                     player_url = self.get_text_by_xpath(Ranking.Stats.PLAYER_URL, element=player)
                     player_nationality = self.get_text_by_xpath(Ranking.Stats.PLAYER_NATIONALITY, element=player)
                     
-                    # IMPORTANT: convert relative picture url to absolute
                     player_picture_rel = self.get_text_by_xpath(Ranking.Stats.PLAYER_PICTURE_URL, element=player)
                     player_picture_abs = self._make_absolute_url(player_picture_rel)
                     
@@ -101,15 +99,13 @@ class HLTVRankingStats(HLTVBase):
                             "player_id": player_id,
                             "nickname": player_nickname,
                             "nationality": player_nationality,
-                            "picture_url": player_picture_abs  # ← AGORA É URL ABSOLUTA!
+                            "picture_url": player_picture_abs
                         })
                     else:
                         self.logger.debug(f"skipping player {player_idx}: missing id or nickname")
-                        
                 except Exception as e:
                     self.logger.error(f"error parsing player {player_idx}: {e}")
                     continue
-                    
         except Exception as e:
             self.logger.error(f"error parsing team lineup: {e}")
             
@@ -120,30 +116,24 @@ class HLTVRankingStats(HLTVBase):
         parse ranking stats within placement range.
         
         returns:
-            list of team ranking dictionaries
+            list of team ranking dictionaries with team_id, team_name, placement, hltv_points, logo_url, lineup
         """
         ranking_data = []
         
         try:
-            # get all team rows
             team_rows = self.get_elements_by_xpath(Ranking.Stats.TEAM_ROW)
             self.logger.info(f"found {len(team_rows)} teams in ranking")
             
-            # process only requested range
             for index, team in enumerate(team_rows, start=1):
-                
-                # filter by placement range
                 if index < self.start_placement or index > self.end_placement:
                     continue
                     
                 self.logger.debug(f"processing team at placement {index}")
                 
                 try:
-                    # extract team data
                     team_name = self.get_text_by_xpath(Ranking.Stats.TEAM_NAME, element=team)
                     team_url = self.get_text_by_xpath(Ranking.Stats.TEAM_URL, element=team)
                     
-                    # IMPORTANT: convert relative logo url to absolute
                     team_logo_rel = self.get_text_by_xpath(Ranking.Stats.TEAM_LOGO_URL, element=team)
                     team_logo_abs = self._make_absolute_url(team_logo_rel)
                     
@@ -160,10 +150,8 @@ class HLTVRankingStats(HLTVBase):
                         self.logger.warning(f"skipping team {index}: missing id or name")
                         continue
                     
-                    # parse lineup
                     lineup = self.__parse_team_lineup(team)
                     
-                    # build team data
                     team_data = {
                         "team_id": team_id,
                         "team_name": team_name,
@@ -175,7 +163,6 @@ class HLTVRankingStats(HLTVBase):
                     
                     ranking_data.append(team_data)
                     self.logger.debug(f"added team {team_name} at position {placement}")
-                    
                 except Exception as e:
                     self.logger.error(f"error parsing team at index {index}: {e}")
                     continue
@@ -194,14 +181,12 @@ class HLTVRankingStats(HLTVBase):
         get ranking stats for specified placement range.
         
         returns:
-            dict with ranking date and team data
+            dict with start_placement, end_placement, ranking_date, ranking_stats, total_teams
         """
         try:
-            # get ranking date
             ranking_date_raw = self.get_text_by_xpath(Ranking.Stats.RANKING_DATE)
             ranking_date = parse_date(ranking_date_raw) if ranking_date_raw else None
             
-            # get ranking data
             ranking_data = self.__parse_ranking_stats()
             
             self.response["start_placement"] = self.start_placement
