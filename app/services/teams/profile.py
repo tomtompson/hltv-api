@@ -1,5 +1,8 @@
+# app/services/team_profile.py
+
 from dataclasses import dataclass
-from typing import List, Dict, Optional
+from typing import List, Dict
+
 from fastapi import HTTPException
 
 from app.services.base import HLTVBase
@@ -24,13 +27,11 @@ class HLTVTeamProfile(HLTVBase):
         """setup team profile with team id."""
         super().__post_init__()
         
-        url = f"https://www.hltv.org/team/{self.team_id}/who"
-        self.URL = url
+        self.URL = f"https://www.hltv.org/team/{self.team_id}/who"
         self.response["id"] = self.team_id
         
         self.logger.info(f"loading team profile for team {self.team_id}")
         
-        # load page
         self.page = self.request_url_page()
         
         self.logger.info(f"team page loaded for {self.team_id}")
@@ -42,12 +43,11 @@ class HLTVTeamProfile(HLTVBase):
         parse team profile data from page.
         
         returns:
-            dict with all team profile data
+            dict with all team profile data (name, rankings, lineup, coach, logo, social)
         """
         self.logger.info("parsing team profile")
         
         try:
-            # ===== BASIC INFO =====
             team_name = self.get_text_by_xpath(Teams.TeamProfile.NAME)
             valve_ranking = clear_number_str(self.get_text_by_xpath(Teams.TeamProfile.VALVE_RANKING))
             world_ranking = clear_number_str(self.get_text_by_xpath(Teams.TeamProfile.WORLD_RANKING))
@@ -59,7 +59,6 @@ class HLTVTeamProfile(HLTVBase):
             
             self.logger.debug(f"basic info: {team_name}, ranking: {world_ranking}, age: {average_age}")
             
-            # ===== LINEUP =====
             player_nicknames = self.get_all_by_xpath(Teams.TeamProfile.PLAYER_NICKNAME)
             player_urls = self.get_all_by_xpath(Teams.TeamProfile.PLAYER_URL)
             
@@ -77,12 +76,10 @@ class HLTVTeamProfile(HLTVBase):
                         })
                     else:
                         self.logger.warning(f"skipping player {i}: missing id or nickname")
-                        
                 except Exception as e:
                     self.logger.error(f"error parsing player {i}: {e}")
                     continue
             
-            # ===== COACH =====
             coach_data = []
             try:
                 coach_nickname = trim(self.get_text_by_xpath(Teams.TeamProfile.COACH_NICKNAME))
@@ -98,11 +95,9 @@ class HLTVTeamProfile(HLTVBase):
                             "nickname": coach_nickname,
                         })
                         self.logger.debug(f"coach: {coach_nickname}")
-                        
             except Exception as e:
                 self.logger.error(f"error parsing coach: {e}")
             
-            # ===== BUILD RESULT =====
             result = {
                 "name": team_name,
                 "valve_ranking": valve_ranking,

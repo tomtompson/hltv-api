@@ -1,5 +1,8 @@
+# app/services/team_search.py
+
 from dataclasses import dataclass
-from typing import List, Dict, Optional
+from typing import List, Dict
+
 from fastapi import HTTPException
 
 from app.services.base import HLTVBase
@@ -28,12 +31,11 @@ class HLTVTeamSearch(HLTVBase):
         
         self.logger.info(f"searching teams with query: {self.query}")
         
-        # fetch data
         self.page_data = self.__fetch_json()
         
         self.logger.info("team search data fetched successfully")
 
-    # ==================== FETCH METHODS ====================
+    # ==================== PRIVATE METHODS ====================
 
     def __fetch_json(self) -> dict:
         """
@@ -41,7 +43,7 @@ class HLTVTeamSearch(HLTVBase):
         
         returns:
             dict: raw json data from hltv search
-        
+            
         raises:
             http exception if request fails
         """
@@ -70,26 +72,17 @@ class HLTVTeamSearch(HLTVBase):
         """
         parse teams from search results.
         
-        extracted data:
-            - id: unique hltv team id
-            - name: team name
-            - country: team country
-            - url: link to team profile
-            - team_logo_url: team logo url
-            - lineup: list of players in team
-        
         returns:
-            list of team dictionaries
+            list of team dictionaries with id, name, country, url,
+            team_logo_url and lineup (list of players)
         """
         results = []
         
         try:
-            # validate data structure
             if not isinstance(self.page_data, list) or len(self.page_data) == 0:
                 self.logger.warning("unexpected data structure or empty response")
                 return []
             
-            # get teams from first item
             teams = self.page_data[0].get("teams", [])
             self.logger.info(f"found {len(teams)} teams for query '{self.query}'")
             
@@ -100,7 +93,6 @@ class HLTVTeamSearch(HLTVBase):
                         self.logger.debug(f"skipping team {team_idx}: missing id")
                         continue
                     
-                    # extract team data
                     name = team.get("name")
                     country = team.get("countryName")
                     
@@ -109,7 +101,6 @@ class HLTVTeamSearch(HLTVBase):
                     
                     team_logo_url = team.get("teamLogoDay")
                     
-                    # parse lineup
                     lineup = []
                     players = team.get("players", [])
                     
@@ -139,7 +130,6 @@ class HLTVTeamSearch(HLTVBase):
                             self.logger.error(f"error parsing player {player_idx} in team {team_id}: {e}")
                             continue
                     
-                    # build team dict
                     team_data = {
                         "id": str(team_id),
                         "name": name,
@@ -169,7 +159,7 @@ class HLTVTeamSearch(HLTVBase):
         search teams and return formatted results.
         
         returns:
-            dict with query and results list
+            dict with query, results list, total count and success flag
         """
         try:
             results = self.__parse_search_results()

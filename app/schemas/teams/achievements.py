@@ -13,4 +13,5 @@ class TeamAchievementsDetails(HLTVBaseModel):
 
 class TeamAchievements  (HLTVBaseModel, AuditMixin):
     id: str
+    achievement_count: Optional[int]
     team_achievements: Optional[List[TeamAchievementsDetails]]

@@ -1,5 +1,8 @@
+# app/services/team_achievements.py
+
 from dataclasses import dataclass
-from typing import List, Dict, Optional
+from typing import List, Dict
+
 from fastapi import HTTPException
 
 from app.services.base import HLTVBase
@@ -24,13 +27,11 @@ class HLTVTeamAchievements(HLTVBase):
         """setup team achievements with team id."""
         super().__post_init__()
         
-        url = f"https://www.hltv.org/team/{self.team_id}/who#tab-achievementsBox"
-        self.URL = url
+        self.URL = f"https://www.hltv.org/team/{self.team_id}/who#tab-achievementsBox"
         self.response["id"] = self.team_id
         
         self.logger.info(f"loading achievements for team {self.team_id}")
         
-        # load page
         self.page = self.request_url_page()
         
         self.logger.info(f"team page loaded for {self.team_id}")
@@ -42,21 +43,19 @@ class HLTVTeamAchievements(HLTVBase):
         parse team achievements from page.
         
         returns:
-            list of achievement dictionaries
+            list of achievement dictionaries with id, tournament_name, placement, team_event_stats
         """
         achievements = []
         
         try:
             self.logger.debug("parsing team achievements")
             
-            # get data from page
             placements = self.get_all_by_xpath(Teams.Achievements.PLACEMENT)
             tournament_names = self.get_all_by_xpath(Teams.Achievements.TOURNAMENT_NAME)
             tournament_urls = self.get_all_by_xpath(Teams.Achievements.TOURNAMENT_URL)
             
             self.logger.debug(f"found {len(placements)} placements, {len(tournament_names)} tournaments")
             
-            # validate data consistency
             min_length = min(len(placements), len(tournament_names), len(tournament_urls))
             
             if min_length == 0:
@@ -66,7 +65,6 @@ class HLTVTeamAchievements(HLTVBase):
             if len(placements) != len(tournament_names) or len(placements) != len(tournament_urls):
                 self.logger.warning(f"data length mismatch: placements={len(placements)}, names={len(tournament_names)}, urls={len(tournament_urls)}")
             
-            # parse each achievement
             for i in range(min_length):
                 try:
                     placement = trim(placements[i]) if i < len(placements) else None
@@ -87,7 +85,6 @@ class HLTVTeamAchievements(HLTVBase):
                     }
                     
                     achievements.append(achievement)
-                    
                 except Exception as e:
                     self.logger.error(f"error parsing achievement {i}: {e}")
                     continue
@@ -106,14 +103,14 @@ class HLTVTeamAchievements(HLTVBase):
         get team achievements.
         
         returns:
-            dict with team id and achievements list
+            dict with team id, achievements list and achievement count
         """
         try:
             achievements = self.__parse_team_achievements()
             
             self.response["id"] = self.team_id
-            self.response["team_achievements"] = achievements
             self.response["achievement_count"] = len(achievements)
+            self.response["team_achievements"] = achievements
             
             self.logger.info(f"returning {len(achievements)} achievements for team {self.team_id}")
             
