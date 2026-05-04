@@ -190,15 +190,30 @@ class Teams:
         UPCOMING_MATCHES_ROW = "//h2[@class = 'standard-headline' and contains(text(), 'Upcoming matches')]/following::table[@class = 'table-container match-table'][1]"
         MATCH_URL = "//td[@class = 'matchpage-button-cell']//a/@href"
         
-        EVENT_NAME = "//div[@class = 'timeAndEvent']//div[@class = 'event text-ellipsis']//a/text()"
-        EVENT_URL = "//div[@class = 'timeAndEvent']//div[@class = 'event text-ellipsis']//a/@href"
-        MATCH_DATE = "//div[@class = 'timeAndEvent']//div[@class = 'date']/text()"
-        MATCH_HOUR = "//div[@class = 'timeAndEvent']//div[@class = 'time']/text()"
-        RIVAL_TEAM_NAME = "//div[@class = 'team2-gradient']//a//div[@class = 'teamName']/text()"
-        RIVAL_TEAM_URL = "//div[@class = 'team-flex '][2]//a[@class = 'team-name team-2']/@href"
+        EVENT_NAME = "//div[contains(@class, 'timeAndEvent')]//div[contains(@class, 'event')]//a/text()"
+        EVENT_URL = "//div[contains(@class, 'timeAndEvent')]//div[contains(@class, 'event')]//a/@href"
+        MATCH_DATE = "//div[contains(@class, 'timeAndEvent')]//div[contains(@class, 'date')]/text()"
+        MATCH_HOUR = "//div[contains(@class, 'timeAndEvent')]//div[contains(@class, 'time')]/text()"
+        RIVAL_TEAM_NAME = "//div[contains(@class, 'team2-gradient')]//div[contains(@class, 'teamName')]/text()"
+        RIVAL_TEAM_URL = "//div[contains(@class, 'team2-gradient')]/a/@href"
         MATCH_TYPE = "//div[@class = 'standard-box veto-box']//div[@class = 'padding preformatted-text']/text()"
-
         
+
+    class Results:
+        RESULT_CONTAINER = "//div[contains(@class, 'results-all')]//div[contains(@class, 'result-con') and @data-zonedgrouping-entry-unix]"
+        TIMESTAMP = "@data-zonedgrouping-entry-unix"
+        
+        MATCH_URL = ".//a[contains(@class, 'a-reset')]/@href"
+        TEAM1_NAME = ".//td[contains(@class, 'team-cell')][1]//div[contains(@class, 'team')]/text()"
+        TEAM1_LOGO = ".//td[contains(@class, 'team-cell')][1]//img[contains(@class, 'team-logo')]/@src"
+        TEAM1_SCORE = ".//td[contains(@class, 'result-score')]/span[1]/text()"
+        TEAM1_SCORE_CLASS = ".//td[contains(@class, 'result-score')]/span[1]/@class"
+        TEAM2_SCORE = ".//td[contains(@class, 'result-score')]/span[2]/text()"
+        TEAM2_NAME = ".//td[contains(@class, 'team-cell')][2]//div[contains(@class, 'team')]/text()"
+        TEAM2_LOGO = ".//td[contains(@class, 'team-cell')][2]//img[contains(@class, 'team-logo')]/@src"
+        EVENT_NAME = ".//td[contains(@class, 'event')]//span[contains(@class, 'event-name')]/text()"
+        EVENT_LOGO = ".//td[contains(@class, 'event')]//img[contains(@class, 'event-logo')]/@src"
+        MATCH_TYPE = ".//div[contains(@class, 'map-text')]/text()"
 class Ranking:
     class Stats:
         TEAM_ROW = "//div[contains(@class, 'ranked-team')]"
