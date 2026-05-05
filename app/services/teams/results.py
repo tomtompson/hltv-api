@@ -42,7 +42,8 @@ class HLTVTeamResults(HLTVBase):
         """
         try:
             first_span_class = self.get_text_by_xpath(
-                Teams.Results.TEAM1_SCORE_CLASS, element=container,
+                Teams.Results.TEAM1_SCORE_CLASS,
+                element=container,
             )
             return bool(first_span_class and "score-won" in first_span_class)
         except Exception:
@@ -61,7 +62,8 @@ class HLTVTeamResults(HLTVBase):
         """Parse a single result container into a match dictionary."""
         # match url
         match_url_rel = self.get_text_by_xpath(
-            Teams.Results.MATCH_URL, element=container,
+            Teams.Results.MATCH_URL,
+            element=container,
         )
         if not match_url_rel:
             return None
@@ -69,7 +71,8 @@ class HLTVTeamResults(HLTVBase):
         match_id = extract_from_url(match_url, "id")
 
         timestamp_str = self.get_text_by_xpath(
-            Teams.Results.TIMESTAMP, element=container,
+            Teams.Results.TIMESTAMP,
+            element=container,
         )
         match_date = None
 
@@ -77,7 +80,9 @@ class HLTVTeamResults(HLTVBase):
             try:
                 timestamp_ms = float(timestamp_str)
                 local_info = convert_timestamp_to_user_timezone(
-                    timestamp_ms, user_timezone="UTC", logger=self.logger,
+                    timestamp_ms,
+                    user_timezone="UTC",
+                    logger=self.logger,
                 )
 
                 if local_info:
@@ -90,7 +95,8 @@ class HLTVTeamResults(HLTVBase):
         team1_name = team1_name if team1_name and team1_name.strip() else None
 
         team1_logo_rel = self.get_text_by_xpath(
-            Teams.Results.TEAM1_LOGO, element=container,
+            Teams.Results.TEAM1_LOGO,
+            element=container,
         )
         team1_logo = f"https:{team1_logo_rel}" if team1_logo_rel else None
 
@@ -98,7 +104,8 @@ class HLTVTeamResults(HLTVBase):
         team2_name = team2_name if team2_name and team2_name.strip() else None
 
         team2_logo_rel = self.get_text_by_xpath(
-            Teams.Results.TEAM2_LOGO, element=container,
+            Teams.Results.TEAM2_LOGO,
+            element=container,
         )
         team2_logo = f"https:{team2_logo_rel}" if team2_logo_rel else None
 
@@ -120,13 +127,15 @@ class HLTVTeamResults(HLTVBase):
         event_name = event_name if event_name and event_name.strip() else None
 
         event_logo_rel = self.get_text_by_xpath(
-            Teams.Results.EVENT_LOGO, element=container,
+            Teams.Results.EVENT_LOGO,
+            element=container,
         )
         event_logo = f"https:{event_logo_rel}" if event_logo_rel else None
 
         # match type
         raw_match_type = self.get_text_by_xpath(
-            Teams.Results.MATCH_TYPE, element=container,
+            Teams.Results.MATCH_TYPE,
+            element=container,
         )
         match_type = self._parse_match_type(raw_match_type)
 

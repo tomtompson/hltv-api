@@ -55,7 +55,8 @@ class HLTVTeamUpcomingMatches(HLTVBase):
                 return []
             container = upcoming_container[0]
             match_urls = self.get_all_by_xpath(
-                Teams.UpcomingMatches.MATCH_URL, element=container,
+                Teams.UpcomingMatches.MATCH_URL,
+                element=container,
             )
             for idx, url in enumerate(match_urls):
                 try:
@@ -76,7 +77,9 @@ class HLTVTeamUpcomingMatches(HLTVBase):
     # ==================== PARSING METHODS ====================
 
     def __parse_single_match(
-        self, match_id: str, user_timezone: str = "UTC",
+        self,
+        match_id: str,
+        user_timezone: str = "UTC",
     ) -> dict | None:
         """Parse a single match page into a dictionary with local date fields.
 
@@ -107,25 +110,30 @@ class HLTVTeamUpcomingMatches(HLTVBase):
 
         try:
             event_name = self.get_text_by_xpath(
-                Teams.UpcomingMatches.EVENT_NAME, element=match_page,
+                Teams.UpcomingMatches.EVENT_NAME,
+                element=match_page,
             )
             event_url = self.get_text_by_xpath(
-                Teams.UpcomingMatches.EVENT_URL, element=match_page,
+                Teams.UpcomingMatches.EVENT_URL,
+                element=match_page,
             )
             tournament_id = extract_from_url(event_url, "id") if event_url else None
 
             rival_team_name = self.get_text_by_xpath(
-                Teams.UpcomingMatches.RIVAL_TEAM_NAME, element=match_page,
+                Teams.UpcomingMatches.RIVAL_TEAM_NAME,
+                element=match_page,
             )
             rival_team_url = self.get_text_by_xpath(
-                Teams.UpcomingMatches.RIVAL_TEAM_URL, element=match_page,
+                Teams.UpcomingMatches.RIVAL_TEAM_URL,
+                element=match_page,
             )
             rival_team_id = (
                 extract_from_url(rival_team_url, "id") if rival_team_url else None
             )
 
             match_type = self.get_text_by_xpath(
-                Teams.UpcomingMatches.MATCH_TYPE, element=match_page,
+                Teams.UpcomingMatches.MATCH_TYPE,
+                element=match_page,
             )
 
             # --- timestamp extraction: uses data-unix from .time or .date element ---
@@ -142,16 +150,19 @@ class HLTVTeamUpcomingMatches(HLTVBase):
 
             if not match_timestamp:
                 date_str = self.get_text_by_xpath(
-                    Teams.UpcomingMatches.MATCH_DATE, element=match_page,
+                    Teams.UpcomingMatches.MATCH_DATE,
+                    element=match_page,
                 )
                 hour_str = self.get_text_by_xpath(
-                    Teams.UpcomingMatches.MATCH_HOUR, element=match_page,
+                    Teams.UpcomingMatches.MATCH_HOUR,
+                    element=match_page,
                 )
                 if date_str and hour_str:
                     try:
                         if re.match(r"\d{4}-\d{2}-\d{2}", date_str):
                             dt = datetime.strptime(
-                                f"{date_str} {hour_str}", "%Y-%m-%d %H:%M",
+                                f"{date_str} {hour_str}",
+                                "%Y-%m-%d %H:%M",
                             )
                         else:
                             clean_date = re.sub(r"(\d)(st|nd|rd|th)", r"\1", date_str)
@@ -168,7 +179,9 @@ class HLTVTeamUpcomingMatches(HLTVBase):
                         )
 
             local_info = convert_timestamp_to_user_timezone(
-                match_timestamp, user_timezone, logger=self.logger,
+                match_timestamp,
+                user_timezone,
+                logger=self.logger,
             )
 
             match_data = {
@@ -240,6 +253,7 @@ class HLTVTeamUpcomingMatches(HLTVBase):
         except Exception as e:
             self.logger.exception(f"error in get_team_upcoming_matches: {e}")
             raise HTTPException(
-                status_code=500, detail=f"error getting team upcoming matches: {e!s}",
+                status_code=500,
+                detail=f"error getting team upcoming matches: {e!s}",
             )
         return self.response

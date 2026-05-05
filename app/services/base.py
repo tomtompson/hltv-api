@@ -152,7 +152,8 @@ class HLTVBase:
             if hasattr(e.response, "status_code") and e.response.status_code == 403:
                 raise HTTPException(status_code=403, detail=f"access forbidden: {url}")
             raise HTTPException(
-                status_code=getattr(e.response, "status_code", 500), detail=str(e),
+                status_code=getattr(e.response, "status_code", 500),
+                detail=str(e),
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"request error: {e!s}")
@@ -305,5 +306,6 @@ class HLTVBase:
         """
         if not self.get_text_by_xpath(xpath):
             raise HTTPException(
-                status_code=404, detail=f"invalid request (url: {self.URL})",
+                status_code=404,
+                detail=f"invalid request (url: {self.URL})",
             )

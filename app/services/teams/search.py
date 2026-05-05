@@ -61,7 +61,8 @@ class HLTVTeamSearch(HLTVBase):
         except Exception as e:
             self.logger.exception(f"error fetching json: {e}")
             raise HTTPException(
-                status_code=500, detail=f"error fetching team search data: {e!s}",
+                status_code=500,
+                detail=f"error fetching team search data: {e!s}",
             )
 
     # ==================== PARSING METHODS ====================
@@ -192,7 +193,8 @@ class HLTVTeamSearch(HLTVBase):
         except Exception as e:
             self.logger.exception(f"error in search_teams: {e}")
             raise HTTPException(
-                status_code=500, detail=f"error searching teams: {e!s}",
+                status_code=500,
+                detail=f"error searching teams: {e!s}",
             )
 
         return self.response

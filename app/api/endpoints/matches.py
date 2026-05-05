@@ -20,7 +20,13 @@ def get_live_matches():
 
 @router.get("/today/", response_model=TodayMatches, response_model_exclude_none=True)
 def get_today_matches(
-    timezone: Annotated[str, Query(description="list of timezones  (first is used)", enum=get_common_timezones())] = "UTC",
+    timezone: Annotated[
+        str,
+        Query(
+            description="list of timezones  (first is used)",
+            enum=get_common_timezones(),
+        ),
+    ] = "UTC",
 ):
     hltv = HLTVTodayMatches()
     return hltv.get_today_matches(user_timezone=timezone)

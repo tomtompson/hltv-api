@@ -313,7 +313,8 @@ class HLTVPlayerStats(HLTVBase):
         except Exception as e:
             self.logger.exception(f"error in get_player_stats: {e}")
             raise HTTPException(
-                status_code=500, detail=f"error processing player stats: {e!s}",
+                status_code=500,
+                detail=f"error processing player stats: {e!s}",
             )
 
         return self.response

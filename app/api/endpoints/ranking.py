@@ -13,6 +13,7 @@ router = APIRouter()
 )
 def get_ranking_stats(start_placement: int, end_placement: int):
     hltv = HLTVRankingStats(
-        start_placement=start_placement, end_placement=end_placement,
+        start_placement=start_placement,
+        end_placement=end_placement,
     )
     return hltv.get_ranking_stats()

@@ -56,26 +56,32 @@ class HLTVLiveMatches(HLTVBase):
         """
         try:
             team_a_name = self.get_text_by_xpath(
-                Matches.LiveMatches.TEAM, element=match_element,
+                Matches.LiveMatches.TEAM,
+                element=match_element,
             )
             team_b_name = self.get_text_by_xpath(
-                Matches.LiveMatches.TEAM, pos=1, element=match_element,
+                Matches.LiveMatches.TEAM,
+                pos=1,
+                element=match_element,
             )
 
             team_a_id = match_element.get("team1")
             team_b_id = match_element.get("team2")
 
             tournament_name = self.get_text_by_xpath(
-                Matches.LiveMatches.TOURNAMENT_NAME, element=match_element,
+                Matches.LiveMatches.TOURNAMENT_NAME,
+                element=match_element,
             )
             tournament_id = match_element.get("data-event-id")
 
             match_type = self.get_text_by_xpath(
-                Matches.LiveMatches.MATCH_TYPE, element=match_element,
+                Matches.LiveMatches.MATCH_TYPE,
+                element=match_element,
             )
 
             match_url = self.get_text_by_xpath(
-                Matches.LiveMatches.MATCH_URL, element=match_element,
+                Matches.LiveMatches.MATCH_URL,
+                element=match_element,
             )
             if match_url and not match_url.startswith("http"):
                 match_url = f"https://www.hltv.org{match_url}"
@@ -99,7 +105,6 @@ class HLTVLiveMatches(HLTVBase):
                 "matchType": match_type,
                 "matchUrl": match_url,
             }
-
 
         except Exception as e:
             self.logger.exception(f"error parsing match: {e}")
@@ -158,7 +163,8 @@ class HLTVLiveMatches(HLTVBase):
         except Exception as e:
             self.logger.exception(f"error in get_live_matches: {e}")
             raise HTTPException(
-                status_code=500, detail=f"error getting live matches: {e!s}",
+                status_code=500,
+                detail=f"error getting live matches: {e!s}",
             )
 
         return self.response

@@ -83,24 +83,29 @@ class HLTVRankingStats(HLTVBase):
 
         try:
             player_rows = self.get_elements_by_xpath(
-                Ranking.Stats.PLAYER_ROW, element=team_element,
+                Ranking.Stats.PLAYER_ROW,
+                element=team_element,
             )
             self.logger.debug(f"found {len(player_rows)} players in lineup")
 
             for player_idx, player in enumerate(player_rows):
                 try:
                     player_nickname = self.get_text_by_xpath(
-                        Ranking.Stats.PLAYER_NICKNAME, element=player,
+                        Ranking.Stats.PLAYER_NICKNAME,
+                        element=player,
                     )
                     player_url = self.get_text_by_xpath(
-                        Ranking.Stats.PLAYER_URL, element=player,
+                        Ranking.Stats.PLAYER_URL,
+                        element=player,
                     )
                     player_nationality = self.get_text_by_xpath(
-                        Ranking.Stats.PLAYER_NATIONALITY, element=player,
+                        Ranking.Stats.PLAYER_NATIONALITY,
+                        element=player,
                     )
 
                     player_picture_rel = self.get_text_by_xpath(
-                        Ranking.Stats.PLAYER_PICTURE_URL, element=player,
+                        Ranking.Stats.PLAYER_PICTURE_URL,
+                        element=player,
                     )
                     player_picture_abs = self._make_absolute_url(player_picture_rel)
 
@@ -150,19 +155,23 @@ class HLTVRankingStats(HLTVBase):
 
                 try:
                     team_name = self.get_text_by_xpath(
-                        Ranking.Stats.TEAM_NAME, element=team,
+                        Ranking.Stats.TEAM_NAME,
+                        element=team,
                     )
                     team_url = self.get_text_by_xpath(
-                        Ranking.Stats.TEAM_URL, element=team,
+                        Ranking.Stats.TEAM_URL,
+                        element=team,
                     )
 
                     team_logo_rel = self.get_text_by_xpath(
-                        Ranking.Stats.TEAM_LOGO_URL, element=team,
+                        Ranking.Stats.TEAM_LOGO_URL,
+                        element=team,
                     )
                     team_logo_abs = self._make_absolute_url(team_logo_rel)
 
                     placement_text = self.get_text_by_xpath(
-                        Ranking.Stats.PLACEMENT, element=team,
+                        Ranking.Stats.PLACEMENT,
+                        element=team,
                     )
                     placement = (
                         clear_number_str(placement_text) if placement_text else index
@@ -234,7 +243,8 @@ class HLTVRankingStats(HLTVBase):
         except Exception as e:
             self.logger.exception(f"error in get_ranking_stats: {e}")
             raise HTTPException(
-                status_code=500, detail=f"error getting ranking stats: {e!s}",
+                status_code=500,
+                detail=f"error getting ranking stats: {e!s}",
             )
 
         return self.response

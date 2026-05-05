@@ -7,7 +7,10 @@ DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 
 
 async def send_discord_notification(
-    endpoint: str, method: str, team_id: str | None = None, ip: str | None = None,
+    endpoint: str,
+    method: str,
+    team_id: str | None = None,
+    ip: str | None = None,
 ) -> None:
     """Envia notificação para o Discord sem travar a requisição."""
     if not DISCORD_WEBHOOK_URL:

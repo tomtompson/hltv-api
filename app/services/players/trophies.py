@@ -68,7 +68,13 @@ class HLTVPlayersTrophies(HLTVBase):
                     tournament_ids.append(None)
 
             for i, (name, img_url, url, tid) in enumerate(
-                zip(tournament_names, trophy_images, tournament_urls, tournament_ids, strict=False),
+                zip(
+                    tournament_names,
+                    trophy_images,
+                    tournament_urls,
+                    tournament_ids,
+                    strict=False,
+                ),
             ):
                 try:
                     trophy = {
@@ -114,7 +120,8 @@ class HLTVPlayersTrophies(HLTVBase):
         except Exception as e:
             self.logger.exception(f"error in get_player_trophies: {e}")
             raise HTTPException(
-                status_code=500, detail=f"error processing player trophies: {e!s}",
+                status_code=500,
+                detail=f"error processing player trophies: {e!s}",
             )
 
         return self.response

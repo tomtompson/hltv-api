@@ -94,7 +94,9 @@ class HLTVEventTeamStats(HLTVBase):
 
             self.logger.debug(f"found {len(team_lineup)} players in lineup")
 
-            for i, (nickname, url) in enumerate(zip(team_lineup, team_player_urls, strict=False)):
+            for i, (nickname, url) in enumerate(
+                zip(team_lineup, team_player_urls, strict=False)
+            ):
                 try:
                     player_id = extract_from_url(url, "id") if url else None
 
@@ -213,7 +215,8 @@ class HLTVEventTeamStats(HLTVBase):
 
         try:
             prize = self._parse_int_safe(
-                Events.EventTeamStats.PRIZE.format(team_id=self.team_id), use_clear=True,
+                Events.EventTeamStats.PRIZE.format(team_id=self.team_id),
+                use_clear=True,
             )
 
             club_share = self._parse_int_safe(
@@ -322,7 +325,8 @@ class HLTVEventTeamStats(HLTVBase):
         except Exception as e:
             self.logger.exception(f"error in get_team_event_stats: {e}")
             raise HTTPException(
-                status_code=500, detail=f"error processing team event stats: {e!s}",
+                status_code=500,
+                detail=f"error processing team event stats: {e!s}",
             )
 
         return self.response

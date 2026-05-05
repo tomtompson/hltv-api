@@ -37,7 +37,9 @@ def extract_date_from_headline(
 
 
 def convert_timestamp_to_user_timezone(
-    timestamp_ms: float, user_timezone: str = "UTC", logger: Any | None = None,
+    timestamp_ms: float,
+    user_timezone: str = "UTC",
+    logger: Any | None = None,
 ) -> dict | None:
     """Convert UTC timestamp (ms) to user's timezone.
 

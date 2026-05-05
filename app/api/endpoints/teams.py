@@ -18,7 +18,9 @@ router = APIRouter()
 
 
 @router.get(
-    "/{team_name}/search", response_model=TeamSearch, response_model_exclude_none=True,
+    "/{team_name}/search",
+    response_model=TeamSearch,
+    response_model_exclude_none=True,
 )
 def search_teams(team_name: str):
     hltv = HLTVTeamSearch(query=team_name)
@@ -26,7 +28,9 @@ def search_teams(team_name: str):
 
 
 @router.get(
-    "/{team_id}/profile", response_model=TeamProfile, response_model_exclude_none=True,
+    "/{team_id}/profile",
+    response_model=TeamProfile,
+    response_model_exclude_none=True,
 )
 def get_team_profile(team_id: str):
     hltv = HLTVTeamProfile(team_id=team_id)
@@ -50,18 +54,29 @@ def get_team_achievements(team_id: str):
 )
 def get_team_upcoming_matches(
     team_id: str,
-    timezone: Annotated[str, Query(description="list of timezeones (first is used)", enum=get_common_timezones())] = "UTC",
+    timezone: Annotated[
+        str,
+        Query(
+            description="list of timezeones (first is used)",
+            enum=get_common_timezones(),
+        ),
+    ] = "UTC",
 ):
     hltv = HLTVTeamUpcomingMatches(team_id=team_id)
     return hltv.get_team_upcoming_matches(user_timezone=timezone)
 
 
 @router.get(
-    "/{team_id}/results/", response_model=TeamResults, response_model_exclude_none=True,
+    "/{team_id}/results/",
+    response_model=TeamResults,
+    response_model_exclude_none=True,
 )
 def get_team_results(
     team_id: str,
-    limit: Annotated[int | None, Query(description="Maximum number of results to return (all if omitted)", ge=1)] = None,
+    limit: Annotated[
+        int | None,
+        Query(description="Maximum number of results to return (all if omitted)", ge=1),
+    ] = None,
 ):
     """Get past results for a team (first page = 100 most recent matches)."""
     service = HLTVTeamResults(team_id=team_id)

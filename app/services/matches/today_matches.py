@@ -32,7 +32,9 @@ class HLTVTodayMatches(HLTVBase):
     # ==================== PRIVATE METHODS ====================
 
     def __parse_match_data(
-        self, match_element, fallback_timestamp: float | None = None,
+        self,
+        match_element,
+        fallback_timestamp: float | None = None,
     ) -> dict | None:
         """Parse a single match element into a dictionary.
 
@@ -49,13 +51,16 @@ class HLTVTodayMatches(HLTVBase):
 
             team1_name = (
                 self.get_text_by_xpath(
-                    Matches.TodayMatches.TEAM_NAME, element=match_element,
+                    Matches.TodayMatches.TEAM_NAME,
+                    element=match_element,
                 )
                 or "TBD"
             )
             team2_name = (
                 self.get_text_by_xpath(
-                    Matches.TodayMatches.TEAM_NAME, pos=1, element=match_element,
+                    Matches.TodayMatches.TEAM_NAME,
+                    pos=1,
+                    element=match_element,
                 )
                 or "TBD"
             )
@@ -64,18 +69,23 @@ class HLTVTodayMatches(HLTVBase):
             team2_id = match_element.get("team2") or ""
 
             team1_logo = self.get_text_by_xpath(
-                Matches.TodayMatches.TEAM_LOGO, element=match_element,
+                Matches.TodayMatches.TEAM_LOGO,
+                element=match_element,
             )
             team2_logo = self.get_text_by_xpath(
-                Matches.TodayMatches.TEAM_LOGO, pos=1, element=match_element,
+                Matches.TodayMatches.TEAM_LOGO,
+                pos=1,
+                element=match_element,
             )
 
             tournament_name = self.get_text_by_xpath(
-                Matches.TodayMatches.TOURNAMENT_NAME, element=match_element,
+                Matches.TodayMatches.TOURNAMENT_NAME,
+                element=match_element,
             )
             tournament_id = match_element.get("data-event-id")
             tournament_logo = self.get_text_by_xpath(
-                Matches.TodayMatches.TOURNAMENT_LOGO, element=match_element,
+                Matches.TodayMatches.TOURNAMENT_LOGO,
+                element=match_element,
             )
 
             match_timestamp = None
@@ -90,21 +100,25 @@ class HLTVTodayMatches(HLTVBase):
 
             if not match_timestamp:
                 match_timestamp_attr = self.get_text_by_xpath(
-                    Matches.TodayMatches.MATCH_TIMESTAMP, element=match_element,
+                    Matches.TodayMatches.MATCH_TIMESTAMP,
+                    element=match_element,
                 )
                 if match_timestamp_attr:
                     with contextlib.suppress(ValueError, TypeError):
                         match_timestamp = float(match_timestamp_attr)
 
             match_type = self.get_text_by_xpath(
-                Matches.TodayMatches.MATCH_TYPE, element=match_element,
+                Matches.TodayMatches.MATCH_TYPE,
+                element=match_element,
             )
             time_text = self.get_text_by_xpath(
-                Matches.TodayMatches.MATCH_TIME, element=match_element,
+                Matches.TodayMatches.MATCH_TIME,
+                element=match_element,
             )
 
             match_url = self.get_text_by_xpath(
-                Matches.TodayMatches.MATCH_URL, element=match_element,
+                Matches.TodayMatches.MATCH_URL,
+                element=match_element,
             )
             if match_url and not match_url.startswith("http"):
                 match_url = f"https://www.hltv.org{match_url}"
@@ -166,7 +180,8 @@ class HLTVTodayMatches(HLTVBase):
             match_wrappers = zone.xpath(".//div[contains(@class, 'match-wrapper')]")
             for match_wrapper in match_wrappers:
                 match_data = self.__parse_match_data(
-                    match_wrapper, fallback_timestamp=section_timestamp,
+                    match_wrapper,
+                    fallback_timestamp=section_timestamp,
                 )
                 if match_data:
                     matches.append(match_data)
@@ -212,7 +227,8 @@ class HLTVTodayMatches(HLTVBase):
             all_matches = []
             for idx, section in enumerate(sections_to_parse):
                 section_date = extract_date_from_headline(
-                    section, self.get_text_by_xpath,
+                    section,
+                    self.get_text_by_xpath,
                 )
                 self.logger.info(f"section {idx + 1} - date: {section_date}")
                 section_matches = self.__parse_section(section)
@@ -223,7 +239,9 @@ class HLTVTodayMatches(HLTVBase):
 
             for match in all_matches:
                 local_info = convert_timestamp_to_user_timezone(
-                    match["match_timestamp"], user_timezone, logger=self.logger,
+                    match["match_timestamp"],
+                    user_timezone,
+                    logger=self.logger,
                 )
                 if local_info:
                     match["local_date"] = local_info["date_str"]

@@ -28,7 +28,9 @@ def search_players(player_name: str):
 
 
 @router.get(
-    "/{player_id}/profile", response_model=PlayerProfile, response_model_exclude=None,
+    "/{player_id}/profile",
+    response_model=PlayerProfile,
+    response_model_exclude=None,
 )
 def get_player_profile(player_id: str):
     hltv = HLTVPlayerProfile(player_id=player_id)

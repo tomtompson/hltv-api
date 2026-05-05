@@ -72,7 +72,9 @@ class HLTVTeamProfile(HLTVBase):
             self.logger.debug(f"found {len(player_nicknames)} players in lineup")
 
             lineup = []
-            for i, (nickname, url) in enumerate(zip(player_nicknames, player_urls, strict=False)):
+            for i, (nickname, url) in enumerate(
+                zip(player_nicknames, player_urls, strict=False)
+            ):
                 try:
                     player_id = extract_from_url(url, "id") if url else None
 
@@ -134,7 +136,8 @@ class HLTVTeamProfile(HLTVBase):
         except Exception as e:
             self.logger.exception(f"error parsing team profile: {e}")
             raise HTTPException(
-                status_code=500, detail=f"error parsing team profile: {e!s}",
+                status_code=500,
+                detail=f"error parsing team profile: {e!s}",
             )
 
     # ==================== PUBLIC METHODS ====================
@@ -157,7 +160,8 @@ class HLTVTeamProfile(HLTVBase):
         except Exception as e:
             self.logger.exception(f"error in get_team_profile: {e}")
             raise HTTPException(
-                status_code=500, detail=f"error getting team profile: {e!s}",
+                status_code=500,
+                detail=f"error getting team profile: {e!s}",
             )
 
         return self.response

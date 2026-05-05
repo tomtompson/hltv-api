@@ -60,7 +60,8 @@ class HLTVEventsSearch(HLTVBase):
         except Exception as e:
             self.logger.exception(f"error fetching json: {e}")
             raise HTTPException(
-                status_code=500, detail=f"error fetching event search data: {e!s}",
+                status_code=500,
+                detail=f"error fetching event search data: {e!s}",
             )
 
     # ==================== PARSING METHODS ====================
@@ -158,7 +159,8 @@ class HLTVEventsSearch(HLTVBase):
         except Exception as e:
             self.logger.exception(f"error in search_events: {e}")
             raise HTTPException(
-                status_code=500, detail=f"error searching events: {e!s}",
+                status_code=500,
+                detail=f"error searching events: {e!s}",
             )
 
         return self.response
