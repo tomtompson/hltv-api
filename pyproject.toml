@@ -21,6 +21,9 @@ dependencies = [
     "uvicorn>=0.46.0",
 ]
 
+[project.scripts]
+hltv-api = "app.main:main"
+
 [tool.ty.environment]
 python = ".venv"
 

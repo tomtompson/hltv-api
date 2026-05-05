@@ -32,7 +32,7 @@ def docs_redirect():
     return RedirectResponse(url="/docs")
 
 
-if __name__ == "__main__":
+def main():
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
@@ -40,3 +40,7 @@ if __name__ == "__main__":
         reload=True,
         log_level="debug",
     )
+
+
+if __name__ == "__main__":
+    main()

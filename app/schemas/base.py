@@ -12,7 +12,8 @@ class HLTVBaseModel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     @field_validator("age", mode="before", check_fields=False)
-    def parse_age(self, v: str | int) -> int | None:
+    @classmethod
+    def parse_age(cls, v: str | int) -> int | None:
         if isinstance(v, int):
             return v
         if v and v.isdigit():
@@ -20,9 +21,9 @@ class HLTVBaseModel(BaseModel):
         return None
 
     @field_validator("rating", mode="before", check_fields=False)
-    def parse_rating(self, v: str) -> float | None:
+    @classmethod
+    def parse_rating(cls, v: str) -> float | None:
         try:
             return float(v)
-
-        except ValueError, TypeError:
+        except (ValueError, TypeError):
             return None

@@ -1,9 +1,6 @@
-from typing import TYPE_CHECKING
-
 from app.schemas.base import AuditMixin, HLTVBaseModel
 
-if TYPE_CHECKING:
-    from pydantic import HttpUrl
+from pydantic import HttpUrl
 
 
 class TeamAchievementsDetails(HLTVBaseModel):
