@@ -46,90 +46,80 @@ class HLTVPlayerPersonalAchievements(HLTVBase):
             dict with all personal achievements data
 
         """
-        achievements = {}
+        self.logger.info("parsing personal achievements")
 
-        try:
-            self.logger.info("parsing personal achievements")
+        placements = self.get_all_by_xpath(
+            Players.personalAchievements.TOP_20_PLACEMENT,
+        )
+        years = self.get_all_by_xpath(Players.personalAchievements.TOP_20_YEAR)
+        article_urls = self.get_all_by_xpath(
+            Players.personalAchievements.TOP_20_ARTICLE_URL,
+        )
 
-            placements = self.get_all_by_xpath(
-                Players.personalAchievements.TOP_20_PLACEMENT,
+        self.logger.debug(
+            f"top20 - placements: {len(placements)}, years: {len(years)}, articles: {len(article_urls)}",
+        )
+
+        top_20_list = []
+        for i, (placement, year) in enumerate(zip(placements, years, strict=False)):
+            clean_placement = trim(placement)
+            clean_year = "20" + year.strip("()'")
+            article = (
+                f"https://www.hltv.org{article_urls[i]}"
+                if i < len(article_urls)
+                else None
             )
-            years = self.get_all_by_xpath(Players.personalAchievements.TOP_20_YEAR)
-            article_urls = self.get_all_by_xpath(
-                Players.personalAchievements.TOP_20_ARTICLE_URL,
-            )
-
-            self.logger.debug(
-                f"top20 - placements: {len(placements)}, years: {len(years)}, articles: {len(article_urls)}",
-            )
-
-            top_20_list = []
-            for i, (placement, year) in enumerate(zip(placements, years, strict=False)):
-                try:
-                    clean_placement = trim(placement)
-                    clean_year = "20" + year.strip("()'")
-                    article = (
-                        f"https://www.hltv.org{article_urls[i]}"
-                        if i < len(article_urls)
-                        else None
-                    )
-
-                    top_20_list.append(
-                        {
-                            "placement": clean_placement,
-                            "year": clean_year,
-                            "article": article,
-                        },
-                    )
-                except Exception as e:
-                    self.logger.exception(f"error parsing top20 item {i}: {e}")
-                    continue
-
-            major_winner_count = self.get_text_by_xpath(
-                Players.personalAchievements.MAJOR_WINNER_COUNT,
-            )
-            major_mvp_count = self.get_text_by_xpath(
-                Players.personalAchievements.MAJOR_MVP_COUNT,
-            )
-            mvp_winner_count = self.get_text_by_xpath(
-                Players.personalAchievements.MVP_WINNER_COUNT,
+            top_20_list.append(
+                {
+                    "placement": clean_placement,
+                    "year": clean_year,
+                    "article": article,
+                },
             )
 
-            self.logger.debug(
-                f"major winner: {major_winner_count}, major mvp: {major_mvp_count}, mvp count: {mvp_winner_count}",
-            )
+        major_winner_count = self.get_text_by_xpath(
+            Players.personalAchievements.MAJOR_WINNER_COUNT,
+        )
+        major_mvp_count = self.get_text_by_xpath(
+            Players.personalAchievements.MAJOR_MVP_COUNT,
+        )
+        mvp_winner_count = self.get_text_by_xpath(
+            Players.personalAchievements.MVP_WINNER_COUNT,
+        )
 
-            raw_mvp_winner = self.get_text_by_xpath(
-                Players.personalAchievements.MVP_WINNER,
-            )
+        self.logger.debug(
+            f"major winner: {major_winner_count}, major mvp: {major_mvp_count}, mvp count: {mvp_winner_count}",
+        )
 
-            if raw_mvp_winner:
-                mvp_winner = raw_mvp_winner.split("\n")[1:]
-                self.logger.debug(f"mvp winner list: {len(mvp_winner)} items")
-            else:
-                mvp_winner = []
-                self.logger.debug("no mvp winner list found")
+        raw_mvp_winner = self.get_text_by_xpath(Players.personalAchievements.MVP_WINNER)
+        mvp_winner = (
+            [
+                e.strip()
+                for e in raw_mvp_winner.split("\n")
+                if e.strip() and "MVP winner at:" not in e
+            ]
+            if raw_mvp_winner
+            else []
+        )
+        self.logger.debug(f"mvp winner list: {len(mvp_winner)} items")
 
-            evp_at = self.get_all_by_xpath(Players.personalAchievements.EVP)
-            self.logger.debug(f"evp list: {len(evp_at)} items")
+        evp_at = self.get_all_by_xpath(Players.personalAchievements.EVP)
+        self.logger.debug(f"evp list: {len(evp_at)} items")
 
-            achievements = {
-                "major_winner_count": major_winner_count or None,
-                "major_mvp_count": major_mvp_count or None,
-                "mvp_winner_count": mvp_winner_count or None,
-                "evp_count": len(evp_at) if evp_at else None,
-                "top_20_count": len(top_20_list) if top_20_list else None,
-                "mvp_winner": mvp_winner or None,
-                "evp_at": evp_at or None,
-                "top_20": top_20_list or None,
-            }
+        achievements = {
+            "major_winner_count": major_winner_count or None,
+            "major_mvp_count": major_mvp_count or None,
+            "mvp_winner_count": mvp_winner_count or None,
+            "evp_count": len(evp_at) if evp_at else None,
+            "top_20_count": len(top_20_list) if top_20_list else None,
+            "mvp_winner": mvp_winner or None,
+            "evp_at": evp_at or None,
+            "top_20": top_20_list or None,
+        }
 
-            self.logger.info(
-                f"parsed {len(top_20_list)} top20 entries, {len(evp_at)} evp entries",
-            )
-
-        except Exception as e:
-            self.logger.exception(f"error parsing personal achievements: {e}")
+        self.logger.info(
+            f"parsed {len(top_20_list)} top20 entries, {len(evp_at)} evp entries",
+        )
 
         return achievements
 
@@ -153,7 +143,7 @@ class HLTVPlayerPersonalAchievements(HLTVBase):
             )
 
         except Exception as e:
-            self.logger.exception(f"error in get_player_personal_achievements: {e}")
+            self.logger.exception("error in get_player_personal_achievements")
             raise HTTPException(
                 status_code=500,
                 detail=f"error processing personal achievements: {e!s}",

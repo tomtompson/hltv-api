@@ -8,7 +8,7 @@ class PlayerProfile(HLTVBaseModel, AuditMixin):
     url: HttpUrl
     nickname: str
     name: str
-    age: int
+    age: int | None
     nationality: str
     rating: float | None
     current_team: str | None

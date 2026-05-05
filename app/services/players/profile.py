@@ -50,7 +50,10 @@ class HLTVPlayerProfile(HLTVBase):
         self.response["current_team_url"] = (
             f"https://www.hltv.org{self.get_text_by_xpath(Players.Profile.CURRENT_TEAM_URL)}"
         )
-        self.response["image_url"] = self.get_text_by_xpath(Players.Profile.IMAGE_URL)
+        image_url = self.get_text_by_xpath(Players.Profile.IMAGE_URL)
+        if image_url and not image_url.startswith("http"):
+            image_url = f"https://www.hltv.org{image_url}" if not image_url.endswith("player_silhouette.png") else None
+        self.response["image_url"] = image_url
         self.response["url"] = self.get_text_by_xpath(Players.Profile.URL)
         self.response["social_media"] = self.get_all_by_xpath(
             Players.Profile.SOCIAL_MEDIA,
