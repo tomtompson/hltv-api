@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import TYPE_CHECKING
 
+from app.schemas.base import AuditMixin, HLTVBaseModel
 
-from pydantic import HttpUrl
-
-from app.schemas.base import AuditMixin,HLTVBaseModel
+if TYPE_CHECKING:
+    from pydantic import HttpUrl
 
 
 class Top20Achievement(HLTVBaseModel):
@@ -11,16 +11,18 @@ class Top20Achievement(HLTVBaseModel):
     year: str
     article: HttpUrl
 
+
 class personalAchievementDetail(HLTVBaseModel):
-    major_winner_count: Optional[int] = None
-    major_mvp_count: Optional[int] = None
-    mvp_winner_count: Optional[int] = None
-    evp_count: Optional[int] = None
-    top_20_count: Optional[int] = None
-    mvp_winner: Optional[List[str]] = None
-    evp_at: Optional[List[str]] = None
-    top_20: Optional[List[Top20Achievement]] = None
+    major_winner_count: int | None = None
+    major_mvp_count: int | None = None
+    mvp_winner_count: int | None = None
+    evp_count: int | None = None
+    top_20_count: int | None = None
+    mvp_winner: list[str] | None = None
+    evp_at: list[str] | None = None
+    top_20: list[Top20Achievement] | None = None
+
 
 class PlayerPersonalAchievements(HLTVBaseModel, AuditMixin):
     id: str
-    personal_achievements: Optional[personalAchievementDetail] = None
+    personal_achievements: personalAchievementDetail | None = None

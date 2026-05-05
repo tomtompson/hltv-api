@@ -1,24 +1,29 @@
-from typing import List, Optional
+from typing import TYPE_CHECKING
 
-from pydantic import HttpUrl
+from app.schemas.base import AuditMixin, HLTVBaseModel
 
-from app.schemas.base import HLTVBaseModel, AuditMixin
+if TYPE_CHECKING:
+    from pydantic import HttpUrl
+
 
 class prizeDetails(HLTVBaseModel):
-    prize: Optional[int]
-    club_share: Optional[int]
+    prize: int | None
+    club_share: int | None
+
 
 class vrsDetails(HLTVBaseModel):
-    vrs_date: Optional[str]
-    points_before_event: Optional[int]
-    points_after_event: Optional[int]
-    points_acquired: Optional[int]
-    placement_before_event: Optional[int]
-    placement_after_event: Optional[int]
+    vrs_date: str | None
+    points_before_event: int | None
+    points_after_event: int | None
+    points_acquired: int | None
+    placement_before_event: int | None
+    placement_after_event: int | None
+
 
 class coachDetails(HLTVBaseModel):
     id: str
     nickname: str
+
 
 class lineupDetails(HLTVBaseModel):
     id: str
@@ -28,14 +33,11 @@ class lineupDetails(HLTVBaseModel):
 
 class eventTeamStatsDetails(HLTVBaseModel, AuditMixin):
     team_placement: str
-    prize: Optional[List[prizeDetails]]
-    vrs: Optional[List[vrsDetails]]
-    qualify_method: Optional[str]
-    lineup: List[lineupDetails]
-    coach: Optional[List[coachDetails]]
-    
-    
-
+    prize: list[prizeDetails] | None
+    vrs: list[vrsDetails] | None
+    qualify_method: str | None
+    lineup: list[lineupDetails]
+    coach: list[coachDetails] | None
 
 
 class EventTeamStats(HLTVBaseModel, AuditMixin):

@@ -1,23 +1,27 @@
-from typing import Optional, List
-from pydantic import HttpUrl
+from typing import TYPE_CHECKING
 
-from app.schemas.base import HLTVBaseModel, AuditMixin
+from app.schemas.base import AuditMixin, HLTVBaseModel
+
+if TYPE_CHECKING:
+    from pydantic import HttpUrl
+
 
 class LiveMatchsDetails(HLTVBaseModel):
-    match_id: str = None
-    team_a: Optional[str] = None
-    team_a_id: Optional[str] = None
-    team_a_map_score: Optional[int] = None 
-    team_a_current_map_score: Optional[int] = None
-    team_b_current_map_score: Optional[int] = None
-    team_b_map_score: Optional[int] = None
-    team_b_id: Optional[str] = None
-    team_b: Optional[str] = None
-    tournament_name: Optional[str] = None
-    tournament_id: Optional[str] = None
-    match_type: Optional[str] =None
-    match_url: Optional[HttpUrl] = None
+    match_id: str | None = None
+    team_a: str | None = None
+    team_a_id: str | None = None
+    team_a_map_score: int | None = None
+    team_a_current_map_score: int | None = None
+    team_b_current_map_score: int | None = None
+    team_b_map_score: int | None = None
+    team_b_id: str | None = None
+    team_b: str | None = None
+    tournament_name: str | None = None
+    tournament_id: str | None = None
+    match_type: str | None = None
+    match_url: HttpUrl | None = None
 
-class LiveMatches(AuditMixin,HLTVBaseModel):
-    live_matchs_count: int = None
-    live_matchs: List[LiveMatchsDetails] = None
+
+class LiveMatches(AuditMixin, HLTVBaseModel):
+    live_matchs_count: int | None = None
+    live_matchs: list[LiveMatchsDetails] | None = None

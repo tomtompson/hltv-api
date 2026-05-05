@@ -1,8 +1,9 @@
-from typing import Optional, List
-
-from pydantic import HttpUrl
+from typing import TYPE_CHECKING
 
 from app.schemas.base import AuditMixin, HLTVBaseModel
+
+if TYPE_CHECKING:
+    from pydantic import HttpUrl
 
 
 class trophiesDetails(HLTVBaseModel):
@@ -12,7 +13,7 @@ class trophiesDetails(HLTVBaseModel):
     tournament_img_url: HttpUrl
 
 
-class PlayerTrophies(HLTVBaseModel,AuditMixin):
+class PlayerTrophies(HLTVBaseModel, AuditMixin):
     id: str
-    trophy_count: Optional[int] = None
-    trophies: Optional[List[trophiesDetails]]= None
+    trophy_count: int | None = None
+    trophies: list[trophiesDetails] | None = None

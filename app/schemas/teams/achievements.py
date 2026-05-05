@@ -1,8 +1,9 @@
-from typing import List, Optional
+from typing import TYPE_CHECKING
 
-from pydantic import HttpUrl
+from app.schemas.base import AuditMixin, HLTVBaseModel
 
-from app.schemas.base import HLTVBaseModel,AuditMixin
+if TYPE_CHECKING:
+    from pydantic import HttpUrl
 
 
 class TeamAchievementsDetails(HLTVBaseModel):
@@ -11,7 +12,8 @@ class TeamAchievementsDetails(HLTVBaseModel):
     placement: str
     team_event_stats: HttpUrl
 
-class TeamAchievements  (HLTVBaseModel, AuditMixin):
+
+class TeamAchievements(HLTVBaseModel, AuditMixin):
     id: str
-    achievement_count: Optional[int]
-    team_achievements: Optional[List[TeamAchievementsDetails]]
+    achievement_count: int | None
+    team_achievements: list[TeamAchievementsDetails] | None

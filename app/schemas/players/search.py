@@ -1,9 +1,9 @@
-from typing import List, Optional
-
-from pydantic import HttpUrl
+from typing import TYPE_CHECKING
 
 from app.schemas.base import AuditMixin, HLTVBaseModel
 
+if TYPE_CHECKING:
+    from pydantic import HttpUrl
 
 
 class PlayerSearchResult(HLTVBaseModel):
@@ -14,6 +14,7 @@ class PlayerSearchResult(HLTVBaseModel):
     flag_url: HttpUrl
     url: HttpUrl
 
-class PlayerSearch(HLTVBaseModel,AuditMixin):
+
+class PlayerSearch(HLTVBaseModel, AuditMixin):
     query: str
-    results: Optional[List[PlayerSearchResult]] =None
+    results: list[PlayerSearchResult] | None = None
