@@ -251,7 +251,8 @@ class HLTVEventTeamStats(HLTVBase):
             if not value:
                 return None
             if use_clear:
-                return clear_number_str(value)
+                cleared = clear_number_str(value)
+                return int(cleared) if cleared is not None else None
             try:
                 return int(value)
             except Exception:

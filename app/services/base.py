@@ -3,18 +3,18 @@
 import logging
 import random
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import cast
 
 import requests
 from bs4 import BeautifulSoup
+from curl_cffi.requests.models import Response as CurlResponse
 from fastapi import HTTPException
 from lxml import etree
-from requests import Response, TooManyRedirects
+from lxml.etree import _Element
+from requests import TooManyRedirects
+from requests.models import Response as RequestsResponse
 
 from app.utils.utils import trim
-
-if TYPE_CHECKING:
-    from xml.etree import ElementTree as ET
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +122,7 @@ class HLTVBase:
 
     # ==================== REQUEST METHODS ====================
 
-    def make_request(self, url: str | None = None) -> Response:
+    def make_request(self, url: str | None = None) -> CurlResponse | RequestsResponse:
         """Perform a single HTTP GET request with fresh headers.
 
         Args:
@@ -171,7 +171,7 @@ class HLTVBase:
         response = self.make_request(url)
         return BeautifulSoup(response.content, "html.parser")
 
-    def request_url_page(self, url: str | None = None) -> ET:
+    def request_url_page(self, url: str | None = None) -> _Element:
         """Fetch a url and return an lxml elementtree for xpath queries.
 
         Args:
@@ -185,7 +185,7 @@ class HLTVBase:
         return self.convert_bsoup_to_page(bsoup)
 
     @staticmethod
-    def convert_bsoup_to_page(bsoup: BeautifulSoup) -> ET:
+    def convert_bsoup_to_page(bsoup: BeautifulSoup) -> _Element:
         """Convert beautifulsoup object to lxml elementtree.
 
         Args:
@@ -292,7 +292,7 @@ class HLTVBase:
         """
         base = element if element is not None else self.page
         try:
-            return base.xpath(xpath)
+            return cast(list[etree._Element], base.xpath(xpath))
         except Exception as e:
             msg = f"xpath element extraction error '{xpath}': {e}"
             raise ValueError(msg) from e

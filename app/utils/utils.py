@@ -343,7 +343,7 @@ def extract_age(age_str: str) -> int | None:
     return None
 
 
-def extract_float_from_percentage_number(percentage_str: str) -> int | None:
+def extract_float_from_percentage_number(percentage_str: str) -> float | None:
     """Extracts the numeric percentage from a string in the format 'XX%'.
 
     Args:
@@ -448,7 +448,7 @@ def clear_number_str(value: str | None) -> str | None:
     return None
 
 
-def parse_date(date: str) -> str:
+def parse_date(date: str) -> str | None:
 
     match = re.search(r"([A-Z][a-z]+) (\d{1,2})(?:st|nd|rd|th)?[,\s]+(\d{4})", date)
 
