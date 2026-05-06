@@ -1,5 +1,6 @@
 # app/services/hltv_base.py
 
+import json
 import logging
 import random
 from dataclasses import dataclass, field
@@ -11,7 +12,6 @@ from curl_cffi.requests.models import Response as CurlResponse
 from fastapi import HTTPException
 from lxml import etree
 from lxml.etree import _Element
-from requests import TooManyRedirects
 from requests.models import Response as RequestsResponse
 
 from app.settings import settings
@@ -20,6 +20,18 @@ from app.utils.utils import trim
 logger = logging.getLogger(__name__)
 
 _FLARESOLVERR_SESSION_ID = "hltv-api"
+
+
+class FlareSolverrResponse:
+    """Wraps a FlareSolverr solution so downstream code can call .content or .json()."""
+
+    def __init__(self, body: str, status_code: int) -> None:
+        self.content = body.encode("utf-8")
+        self.status_code = status_code
+
+    def json(self) -> dict:
+        return json.loads(self.content)
+
 
 # ==================== HELPERS ====================
 
@@ -82,6 +94,7 @@ class HLTVBase:
     URL: str = field(init=False)
     response: dict = field(default_factory=dict, init=False)
     use_proxy: bool = field(default=False, init=False)
+    use_flaresolverr: bool = field(default=False, init=False)
 
     # ==================== INIT METHODS ====================
 
@@ -125,7 +138,9 @@ class HLTVBase:
 
     def _ensure_flaresolverr_session(self) -> None:
         """Create the persistent FlareSolverr session if it doesn't exist yet."""
-        resp = requests.post(settings.FLARESOLVERR_URL, json={"cmd": "sessions.list"}, timeout=10)
+        resp = requests.post(
+            settings.FLARESOLVERR_URL, json={"cmd": "sessions.list"}, timeout=10
+        )
         existing = resp.json().get("sessions", [])
         if _FLARESOLVERR_SESSION_ID not in existing:
             self.logger.info("creating flaresolverr session")
@@ -153,18 +168,49 @@ class HLTVBase:
         url = url or self.URL
         self._refresh_headers()
 
+        if self.use_flaresolverr:
+            return self._make_request_flaresolverr(url)
+        return self._make_request_direct(url)
+
+    def _make_request_direct(self, url: str) -> CurlResponse | RequestsResponse:
+        try:
+            response = self._session.get(url, timeout=30, allow_redirects=True)
+            self.logger.info(f"request to {url} - status: {response.status_code}")
+            response.raise_for_status()
+            return response
+        except requests.exceptions.HTTPError as e:
+            if hasattr(e.response, "status_code") and e.response.status_code == 403:
+                raise HTTPException(status_code=403, detail=f"access forbidden: {url}")
+            raise HTTPException(
+                status_code=getattr(e.response, "status_code", 500),
+                detail=str(e),
+            )
+        except requests.exceptions.ConnectionError:
+            raise HTTPException(status_code=500, detail=f"connection error: {url}")
+        except requests.exceptions.TooManyRedirects:
+            raise HTTPException(status_code=404, detail=f"not found: {url}")
+
+    def _make_request_flaresolverr(self, url: str) -> FlareSolverrResponse:
         try:
             self._ensure_flaresolverr_session()
 
             fs_response = requests.post(
                 settings.FLARESOLVERR_URL,
-                json={"cmd": "request.get", "url": url, "session": _FLARESOLVERR_SESSION_ID, "maxTimeout": 60000},
+                json={
+                    "cmd": "request.get",
+                    "url": url,
+                    "session": _FLARESOLVERR_SESSION_ID,
+                    "maxTimeout": 60000,
+                },
                 timeout=70,
             )
             fs_data = fs_response.json()
 
             if fs_data.get("status") != "ok":
-                raise HTTPException(status_code=500, detail=f"flaresolverr error: {fs_data.get('message')}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"flaresolverr error: {fs_data.get('message')}",
+                )
 
             status = fs_data["solution"]["status"]
             self.logger.info(f"flaresolverr request to {url} - status: {status}")
@@ -174,15 +220,11 @@ class HLTVBase:
             if status == 403:
                 raise HTTPException(status_code=403, detail=f"access forbidden: {url}")
             if status >= 400:
-                raise HTTPException(status_code=status, detail=f"HTTP error {status}: {url}")
+                raise HTTPException(
+                    status_code=status, detail=f"HTTP error {status}: {url}"
+                )
 
-            # wrap response so downstream code (.content) works unchanged
-            class _FakeResponse:
-                def __init__(self, html: str, status_code: int) -> None:
-                    self.content = html.encode("utf-8")
-                    self.status_code = status_code
-
-            return _FakeResponse(fs_data["solution"]["response"], status)  # type: ignore[return-value]
+            return FlareSolverrResponse(fs_data["solution"]["response"], status)  # type: ignore[return-value]
 
         except HTTPException:
             raise

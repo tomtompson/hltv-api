@@ -24,6 +24,7 @@ class HLTVPlayerCareerStats(HLTVBase):
         """Setup career stats with player id."""
         super().__post_init__()
 
+        self.use_flaresolverr = True
         url = f"https://www.hltv.org/stats/players/{self.player_id}/who"
         self.URL = url
         self.response["id"] = self.player_id
