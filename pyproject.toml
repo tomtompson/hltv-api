@@ -28,4 +28,4 @@ hltv-api = "app.main:main"
 python = ".venv"
 
 [dependency-groups]
-dev = ["ruff>=0.15.12", "ty>=0.0.34"]
+dev = ["lxml-stubs>=0.5.1", "ruff>=0.15.12", "ty>=0.0.34"]
