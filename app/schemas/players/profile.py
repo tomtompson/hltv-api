@@ -1,6 +1,6 @@
-from app.schemas.base import AuditMixin, HLTVBaseModel
-
 from pydantic import HttpUrl
+
+from app.schemas.base import AuditMixin, HLTVBaseModel
 
 
 class PlayerProfile(HLTVBaseModel, AuditMixin):
