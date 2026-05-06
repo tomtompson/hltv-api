@@ -19,8 +19,6 @@ from app.utils.utils import trim
 
 logger = logging.getLogger(__name__)
 
-_FLARESOLVERR_SESSION_ID = "hltv-api"
-
 
 class FlareSolverrResponse:
     """Wraps a FlareSolverr solution so downstream code can call .content or .json()."""
@@ -136,20 +134,6 @@ class HLTVBase:
         """Update session headers with a fresh random set."""
         self._session.headers.update(_get_random_headers())
 
-    def _ensure_flaresolverr_session(self) -> None:
-        """Create the persistent FlareSolverr session if it doesn't exist yet."""
-        resp = requests.post(
-            settings.FLARESOLVERR_URL, json={"cmd": "sessions.list"}, timeout=10
-        )
-        existing = resp.json().get("sessions", [])
-        if _FLARESOLVERR_SESSION_ID not in existing:
-            self.logger.info("creating flaresolverr session")
-            requests.post(
-                settings.FLARESOLVERR_URL,
-                json={"cmd": "sessions.create", "session": _FLARESOLVERR_SESSION_ID},
-                timeout=10,
-            )
-
     # ==================== REQUEST METHODS ====================
 
     def make_request(self, url: str | None = None) -> CurlResponse | RequestsResponse:
@@ -192,14 +176,11 @@ class HLTVBase:
 
     def _make_request_flaresolverr(self, url: str) -> FlareSolverrResponse:
         try:
-            self._ensure_flaresolverr_session()
-
             fs_response = requests.post(
                 settings.FLARESOLVERR_URL,
                 json={
                     "cmd": "request.get",
                     "url": url,
-                    "session": _FLARESOLVERR_SESSION_ID,
                     "maxTimeout": 60000,
                 },
                 timeout=70,
@@ -224,7 +205,7 @@ class HLTVBase:
                     status_code=status, detail=f"HTTP error {status}: {url}"
                 )
 
-            return FlareSolverrResponse(fs_data["solution"]["response"], status)  # type: ignore[return-value]
+            return FlareSolverrResponse(fs_data["solution"]["response"], status)
 
         except HTTPException:
             raise
