@@ -1,8 +1,10 @@
 from fastapi import APIRouter
 
+from app.schemas.players.career_stats import PlayerCareerStats
 from app.schemas.players.personal_achievements import PlayerPersonalAchievements
 from app.schemas.players.profile import PlayerProfile
 from app.schemas.players.search import PlayerSearch
+from app.schemas.players.stats import PlayerStats
 from app.schemas.players.team_achievements import PlayerTeamAchievements
 from app.schemas.players.trophies import PlayerTrophies
 from app.services.players.career_stats import HLTVPlayerCareerStats
@@ -66,12 +68,22 @@ def get_player_trophies(player_id: str):
     hltv = HLTVPlayersTrophies(player_id=player_id)
     return hltv.get_player_trophies()
 
-    # @router.get("/{player_id}/stats", response_model = PlayerStats, response_model_exclude_none=True)
-    # def get_player_stats(player_id: str):
+
+@router.get(
+    "/{player_id}/stats",
+    response_model=PlayerStats,
+    response_model_exclude_none=True,
+)
+def get_player_stats(player_id: str):
     hltv = HLTVPlayerStats(player_id=player_id)
     return hltv.get_player_stats()
 
-    # @router.get("/{player_id}/career_stats", response_model = PlayerCareerStats, response_model_exclude_none=True)
-    # def get_player_career_stats(player_id: str):
+
+@router.get(
+    "/{player_id}/career_stats",
+    response_model=PlayerCareerStats,
+    response_model_exclude_none=True,
+)
+def get_player_career_stats(player_id: str):
     hltv = HLTVPlayerCareerStats(player_id=player_id)
     return hltv.get_player_career_stats()

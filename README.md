@@ -5,59 +5,55 @@ This project offers an easy-to-use interface for extracting [HLTV](https://www.h
 Please be aware that the deployed version is intended for testing purposes and includes rate limiting. For more flexibility and customization, it's recommended to host the service on your own cloud infrastructure.
 
 ### API Swagger
+
 https://hltv-json-api.fly.dev/
 
 ### Running Locally
-Install [Poetry](https://python-poetry.org/docs/#installation), if you haven't already.
 
-````bash
-# Clone the repository:
-$ git clone https://github.com/eupeutro/hltv-api.git
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), if you haven't already.
 
-# Navigate to the project folder:
-$ cd hltv-api
+```bash
+git clone https://github.com/eupeutro/hltv-api.git
+cd hltv-api
+uv sync
+uv run uvicorn app.main:app
+```
 
-# Instantiate a Poetry virtual environment:
-$ poetry shell
+Then open http://localhost:8000/
 
-# Install the dependencies:
-$ poetry install --no-root
+### Running via Docker Compose (recommended)
 
-# Start the API server:
-$ python app/main.py
+Includes the API and [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) for Cloudflare bypass.
 
-# Access the API local page:
-$ open http://localhost:8000/
-````
+```bash
+git clone https://github.com/eupeutro/hltv-api.git
+cd hltv-api
+docker compose up --build
+```
 
-### Running via Docker
+Then open http://localhost:8000/
 
-````bash
-# Clone the repository:
-$ git clone https://github.com/eupeutro/hltv-api.git
+### Running via Docker (standalone)
 
-# Navigate to the project folder:
-$ cd hltv-api
-
-# Build the Docker image:
-$ docker build -t hltv-api . 
-
-# Instantiate the Docker container:
-$ docker run -d -p 8000:8000 hltv-api
-
-# Access the API local page
-$ open http://localhost:8000/
-````
+```bash
+git clone https://github.com/eupeutro/hltv-api.git
+cd hltv-api
+docker build -t hltv-api .
+docker run -d -p 8000:8000 hltv-api
+```
 
 ### Environment Variables
 
-| Variable                  | Description                                               | Default      |
-|---------------------------|-----------------------------------------------------------|--------------|
-| `RATE_LIMITING_ENABLE`    | Enable rate limiting feature for API calls                | `false`      |
-| `RATE_LIMITING_FREQUENCY` | Delay allowed between each API call. See [slowapi](https://slowapi.readthedocs.io/en/latest/) for more | `2/3seconds` |
+| Variable                  | Description                                                                                            | Default                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------- |
+| `RATE_LIMITING_ENABLE`    | Enable rate limiting for API calls                                                                     | `false`                    |
+| `RATE_LIMITING_FREQUENCY` | Delay allowed between each API call. See [slowapi](https://slowapi.readthedocs.io/en/latest/) for more | `2/3seconds`               |
+| `FLARESOLVERR_URL`        | FlareSolverr instance URL for Cloudflare bypass                                                        | `http://localhost:8191/v1` |
 
-To set the environment variables, create a .env file in the root of your project with the following content:
-````python
+Create a `.env` file in the project root to override defaults:
+
+```
 RATE_LIMITING_ENABLE=false
 RATE_LIMITING_FREQUENCY=2/3seconds
-````
+FLARESOLVERR_URL=http://localhost:8191/v1
+```

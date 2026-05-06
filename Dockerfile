@@ -1,12 +1,15 @@
-FROM python:3.10-slim
+FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim
 
+# Set working directory
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Set uv environment variables for better Docker performance
+ENV UV_LINK_MODE=copy
+ENV UV_COMPILE_BYTECODE=1
 
-COPY . .
+COPY pyproject.toml uv.lock ./
+COPY app/ ./app/
 
-EXPOSE 8000
+RUN uv pip install --system -r pyproject.toml
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app"]
