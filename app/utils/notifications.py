@@ -1,9 +1,8 @@
-import os
 from datetime import datetime
 
 import aiohttp
 
-DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
+from app.settings import settings
 
 
 async def send_discord_notification(
@@ -13,7 +12,7 @@ async def send_discord_notification(
     ip: str | None = None,
 ) -> None:
     """Envia notificação para o Discord sem travar a requisição."""
-    if not DISCORD_WEBHOOK_URL:
+    if not settings.DISCORD_WEBHOOK_URL:
         return
 
     try:
@@ -35,7 +34,7 @@ async def send_discord_notification(
         }
 
         async with aiohttp.ClientSession() as session:
-            await session.post(DISCORD_WEBHOOK_URL, json={"embeds": [embed]})
+            await session.post(settings.DISCORD_WEBHOOK_URL, json={"embeds": [embed]})
     except Exception:
         # não deixa a notificação quebrar a API
         pass
