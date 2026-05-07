@@ -325,11 +325,11 @@ def extract_country_name_from_flag_url(flag_url: str) -> str | None:
     return None
 
 
-def extract_age(age_str: str) -> int | None:
+def extract_age(age_str: str | None) -> int | None:
     """Extracts the numeric age from a string in the format 'XX years'.
 
     Args:
-        age_str (str): The age string in the format 'XX years' (e.g., '28 years').
+        age_str (str | None): The age string in the format 'XX years' (e.g., '28 years').
 
     Returns:
         Optional[int]: The extracted age as an integer, or None if the extraction fails.
