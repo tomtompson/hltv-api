@@ -1,11 +1,12 @@
 services:
   flaresolverr:
-    image: anilcancakir/flaresolverr:${FLARESOLVERR_IMAGE_VERSION}
+    image: ghcr.io/flaresolverr/flaresolverr:${FLARESOLVERR_IMAGE_VERSION}
     ports:
       - "${FLARESOLVERR_PORT}:${FLARESOLVERR_PORT}"
     environment:
       - LOG_LEVEL=${FLARESOLVERR_LOG_LEVEL}
-      - DRIVER=${FLARESOLVERR_DRIVER}
+      - CAPTCHA_SOLVING=${FLARESOLVERR_CAPTCHA_SOLVING:-false}
+      - HEADLESS=true
       - BROWSER_TIMEOUT=${FLARESOLVERR_BROWSER_TIMEOUT}
     networks:
       - internal
@@ -23,9 +24,6 @@ services:
       - FLARESOLVERR_PORT=${FLARESOLVERR_PORT}
       - RATE_LIMITING_ENABLE=${RATE_LIMITING_ENABLE}
       - RATE_LIMITING_FREQUENCY=${RATE_LIMITING_FREQUENCY}
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
     depends_on:
       - flaresolverr
     networks:

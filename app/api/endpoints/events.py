@@ -3,9 +3,11 @@ from fastapi import APIRouter
 from app.schemas.events.profile import EventProfile
 from app.schemas.events.search import EventsSearch
 from app.schemas.events.team_stats import EventTeamStats
+from app.schemas.events.results import EventResults
 from app.services.events.profile import HLTVEventProfile
 from app.services.events.search import HLTVEventsSearch
 from app.services.events.team_stats import HLTVEventTeamStats
+from app.services.events.results import HLTVEventResults
 
 router = APIRouter()
 
@@ -38,3 +40,13 @@ def get_event_profile(event_id: str):
 def get_team_event_stats(event_id: str, team_id: str):
     hltv = HLTVEventTeamStats(event_id=event_id, team_id=team_id)
     return hltv.get_team_event_stats()
+
+
+@router.get(
+    "/{event_id}/results",
+    response_model=EventResults,
+    response_model_exclude_none=False,
+)
+def get_event_results(event_id: str):
+    hltv = HLTVEventResults(event_id=event_id)
+    return hltv.get_event_results()

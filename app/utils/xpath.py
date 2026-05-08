@@ -175,6 +175,24 @@ class Events:
         PRIZE_CLUB_SHARE = "//div[@class = 'team' and .//a[contains(@href,'/team/{team_id}/')]]/following-sibling::div[@class='prize club-share']/text()"
         TEAM_PLACEMENT = "//div[@class = 'team' and .//a[contains(@href,'/team/{team_id}/')]]/following-sibling::div[not(@class)]/text()"
 
+    class EventResults:
+        RESULT_CONTAINER = "//div[contains(@class, 'results-all')]//div[contains(@class, 'result-con') and @data-zonedgrouping-entry-unix]"
+        MATCH_ID = ".//a[contains(@class, 'a-reset')]/@href"
+        TIMESTAMP = "@data-zonedgrouping-entry-unix" 
+        TEAM1_NAME = ".//td[contains(@class, 'team-cell')][1]//div[contains(@class, 'team')]/text()"
+        TEAM1_NAME = ".//td[contains(@class, 'team-cell')][1]//div[contains(@class, 'team')]/text()"
+        TEAM1_LOGO = ".//td[contains(@class, 'team-cell')][1]//img[contains(@class, 'team-logo')]/@src"
+        TEAM1_SCORE = ".//td[contains(@class, 'result-score')]/span[1]/text()"
+        TEAM1_SCORE_CLASS = ".//td[contains(@class, 'result-score')]/span[1]/@class"
+        
+        TEAM2_NAME = ".//td[contains(@class, 'team-cell')][2]//div[contains(@class, 'team')]/text()"
+        TEAM2_LOGO = ".//td[contains(@class, 'team-cell')][2]//img[contains(@class, 'team-logo')]/@src"
+        TEAM2_SCORE = ".//td[contains(@class, 'result-score')]/span[2]/text()"
+        TEAM2_SCORE_CLASS = ".//td[contains(@class, 'result-score')]/span[2]/@class"
+        
+        MATCH_TYPE = ".//div[contains(@class, 'map-text')]/text()"
+        
+        MATCH_URL = ".//a[contains(@class, 'a-reset')]/@href"
 
 class Teams:
     class TeamProfile:
