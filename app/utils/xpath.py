@@ -180,7 +180,6 @@ class Events:
         MATCH_ID = ".//a[contains(@class, 'a-reset')]/@href"
         TIMESTAMP = "@data-zonedgrouping-entry-unix" 
         TEAM1_NAME = ".//td[contains(@class, 'team-cell')][1]//div[contains(@class, 'team')]/text()"
-        TEAM1_NAME = ".//td[contains(@class, 'team-cell')][1]//div[contains(@class, 'team')]/text()"
         TEAM1_LOGO = ".//td[contains(@class, 'team-cell')][1]//img[contains(@class, 'team-logo')]/@src"
         TEAM1_SCORE = ".//td[contains(@class, 'result-score')]/span[1]/text()"
         TEAM1_SCORE_CLASS = ".//td[contains(@class, 'result-score')]/span[1]/@class"
