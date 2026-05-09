@@ -430,15 +430,29 @@ class HLTVMatchStats(HLTVBase):
             dict: match_id and detailed stats including teams, maps, and player performance.
         """
         try:
+            has_stats = bool(self.get_elements_by_xpath(Matches.MatchStats.HAS_STATS))
+
+            if not has_stats:
+                raise HTTPException(
+                    status_code=425,
+                    detail=f"match {self.match_id} has not started yet — no stats available",
+                )
+
+            has_score = bool(self.get_elements_by_xpath(Matches.MatchStats.WITH_SCORE))
+            is_live = not has_score
+
             match_stats = self.__parse_all_match_stats()
 
             self.response["match_id"] = self.match_id
             self.response["match_url"] = self.get_text_by_xpath(Matches.MatchStats.URL)
+            self.response["is_live"] = is_live
             self.response["stats"] = match_stats
 
             self.logger.info(f"match stats retrieved successfully for {self.match_id}")
             return self.response
 
+        except HTTPException:
+            raise
         except Exception as e:
             self.logger.exception(f"error getting match stats: {e}")
             raise HTTPException(

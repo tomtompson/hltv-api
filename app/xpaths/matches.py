@@ -43,6 +43,9 @@ class Matches:
     class MatchStats:
         URL = "//link[@rel='canonical']/@href"
 
+        HAS_STATS = "//div[@class='matchstats']"
+        WITH_SCORE = "//div[contains(@class,'withScore')]"
+
         TEAM1_NAME = (
             "(//div[@class='standard-box teamsBox']//div[@class='teamName'])[1]/text()"
         )
