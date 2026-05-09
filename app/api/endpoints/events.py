@@ -42,7 +42,6 @@ def get_team_event_stats(event_id: str, team_id: str):
 @router.get(
     "/{event_id}/results",
     response_model=EventResults,
-    response_model_exclude_none=False,
 )
 def get_event_results(event_id: str):
     hltv = HLTVEventResults(event_id=event_id)
