@@ -22,7 +22,7 @@ from app.utils.utils import get_common_timezones
 router = APIRouter()
 
 @router.get("/list", response_model=list[TeamListItem])
-def list_teams(top_n: Annotated[int, Query(ge=1)] = 50):
+def list_teams(top_n: int = 50):
     hltv = HLTVTeamSearch(top_n=top_n)
     return hltv.get_teams()
 
